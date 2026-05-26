@@ -1,0 +1,465 @@
+// Prisma schema cho LAVIPCO website
+// Tham khảo: CLAUDE.md mục 8 (Mô hình dữ liệu)
+//
+// Sau khi sửa schema, chạy:
+//   npx prisma generate
+//   npx prisma migrate dev --name <tên-có-ý-nghĩa>
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ======================================================
+// AUTH (Auth.js v5 - tương thích PrismaAdapter)
+// ======================================================
+
+enum UserRole {
+  USER
+  STAFF
+  ADMIN
+}
+
+model User {
+  id             String    @id @default(cuid())
+  email          String    @unique
+  emailVerified  DateTime?
+  name           String?
+  phone          String?
+  image          String?
+  hashedPassword String?
+  role           UserRole  @default(USER)
+  createdAt      DateTime  @default(now())
+  updatedAt      DateTime  @updatedAt
+
+  accounts          Account[]
+  sessions          Session[]
+  addresses         Address[]
+  orders            Order[]
+  quotationRequests QuotationRequest[]
+  blogPosts         BlogPost[]         @relation("BlogAuthor")
+
+  @@index([role])
+  @@map("users")
+}
+
+model Account {
+  id                String  @id @default(cuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String? @db.Text
+  access_token      String? @db.Text
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String? @db.Text
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+  @@map("accounts")
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@map("sessions")
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+  @@map("verification_tokens")
+}
+
+model Address {
+  id           String  @id @default(cuid())
+  userId       String
+  fullName     String
+  phone        String
+  province     String
+  district     String
+  ward         String
+  street       String
+  isDefault    Boolean @default(false)
+  // Mã hành chính chuẩn (GHN/GHTK) — optional, fill khi tích hợp shipping
+  provinceCode String?
+  districtCode String?
+  wardCode     String?
+
+  user   User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  orders Order[]
+
+  @@index([userId])
+  @@map("addresses")
+}
+
+// ======================================================
+// CATALOG: Category, Product, ProductVariant
+// ======================================================
+
+model Category {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  name        String
+  description String?
+  image       String?
+  parentId    String?
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+
+  parent   Category?  @relation("CategoryHierarchy", fields: [parentId], references: [id], onDelete: SetNull)
+  children Category[] @relation("CategoryHierarchy")
+  products Product[]
+
+  @@index([parentId])
+  @@map("categories")
+}
+
+enum ProductStatus {
+  DRAFT
+  ACTIVE
+  ARCHIVED
+}
+
+model Product {
+  id              String        @id @default(cuid())
+  slug            String        @unique
+  name            String
+  description     String?       @db.Text
+  shortDescription String?
+  basePrice       Decimal       @db.Decimal(14, 2)
+  // Cho phép sản phẩm không công khai giá — chỉ liên hệ báo giá
+  priceOnRequest  Boolean       @default(false)
+  brand           String?
+  images          String[] // mảng URL ảnh (Cloudinary)
+  catalogueUrl    String? // link PDF catalogue nếu có
+  // Thông số kỹ thuật dạng JSON tự do — xem types/index.ts ProductSpec
+  specs           Json?
+  categoryId      String
+  status          ProductStatus @default(DRAFT)
+  isFeatured      Boolean       @default(false)
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  category Category         @relation(fields: [categoryId], references: [id])
+  variants ProductVariant[]
+
+  @@index([categoryId])
+  @@index([status])
+  @@index([isFeatured])
+  @@map("products")
+}
+
+model ProductVariant {
+  id         String  @id @default(cuid())
+  productId  String
+  sku        String  @unique
+  name       String? // ví dụ "120W - 5000K"
+  price      Decimal @db.Decimal(14, 2)
+  compareAt  Decimal? @db.Decimal(14, 2) // giá gạch ngang khi đang giảm
+  stock      Int     @default(0)
+  // attribute dạng JSON — xem types/index.ts VariantAttributes
+  attributes Json?
+  isDefault  Boolean @default(false)
+
+  product    Product     @relation(fields: [productId], references: [id], onDelete: Cascade)
+  orderItems OrderItem[]
+
+  @@index([productId])
+  @@map("product_variants")
+}
+
+// ======================================================
+// SERVICES & PROJECTS (Portfolio)
+// ======================================================
+
+model Service {
+  id          String  @id @default(cuid())
+  slug        String  @unique
+  title       String
+  description String  @db.Text
+  icon        String? // tên icon lucide hoặc URL
+  coverImage  String?
+  price       Decimal? @db.Decimal(14, 2) // null = liên hệ báo giá
+  sortOrder   Int     @default(0)
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("services")
+}
+
+enum ProjectCategory {
+  TRAFFIC_LIGHT
+  SMART_LIGHTING
+  LANDSCAPE
+  POWER_INFRA
+  SMART_CITY
+  OTHER
+}
+
+model Project {
+  id          String          @id @default(cuid())
+  slug        String          @unique
+  title       String
+  summary     String?
+  description String?         @db.Text
+  client      String?
+  location    String?
+  year        Int?
+  scale       String? // ví dụ "12 nút giao, 320 tủ điều khiển"
+  category    ProjectCategory
+  images      String[]
+  videoUrl    String?
+  isFeatured  Boolean         @default(false)
+  sortOrder   Int             @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([category])
+  @@index([isFeatured])
+  @@map("projects")
+}
+
+// ======================================================
+// ORDERS (TMĐT)
+// ======================================================
+
+enum PaymentMethod {
+  COD
+  VNPAY
+  MOMO
+  ZALOPAY
+  BANK_TRANSFER
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+  REFUNDED
+}
+
+enum ShippingStatus {
+  PENDING
+  PROCESSING
+  SHIPPED
+  DELIVERED
+  RETURNED
+}
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  PROCESSING
+  COMPLETED
+  CANCELLED
+}
+
+model Order {
+  id                String         @id @default(cuid())
+  code              String         @unique // ví dụ DH202605260001
+  userId            String?
+  guestEmail        String? // cho khách không đăng ký
+  guestPhone        String?
+  subtotal          Decimal        @db.Decimal(14, 2)
+  shippingFee       Decimal        @db.Decimal(14, 2) @default(0)
+  discountAmount    Decimal        @db.Decimal(14, 2) @default(0)
+  total             Decimal        @db.Decimal(14, 2)
+  // Địa chỉ giao hàng — snapshot vào lúc đặt
+  shippingAddressId String?
+  shippingSnapshot  Json?
+  note              String?
+  paymentMethod     PaymentMethod
+  paymentStatus     PaymentStatus  @default(PENDING)
+  shippingStatus    ShippingStatus @default(PENDING)
+  orderStatus       OrderStatus    @default(PENDING)
+  couponCode        String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
+  shippingAddress Address?    @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
+  items           OrderItem[]
+
+  @@index([userId])
+  @@index([orderStatus])
+  @@index([paymentStatus])
+  @@index([createdAt])
+  @@map("orders")
+}
+
+model OrderItem {
+  id               String  @id @default(cuid())
+  orderId          String
+  productVariantId String
+  productName      String // snapshot tên sản phẩm
+  variantName      String?
+  sku              String
+  quantity         Int
+  unitPrice        Decimal @db.Decimal(14, 2)
+  totalPrice       Decimal @db.Decimal(14, 2)
+
+  order   Order          @relation(fields: [orderId], references: [id], onDelete: Cascade)
+  variant ProductVariant @relation(fields: [productVariantId], references: [id])
+
+  @@index([orderId])
+  @@map("order_items")
+}
+
+// ======================================================
+// COUPON / DISCOUNT
+// ======================================================
+
+enum CouponType {
+  PERCENT
+  FIXED
+}
+
+model Coupon {
+  id            String     @id @default(cuid())
+  code          String     @unique
+  description   String?
+  type          CouponType
+  value         Decimal    @db.Decimal(14, 2)
+  minOrderValue Decimal?   @db.Decimal(14, 2)
+  validFrom     DateTime
+  validTo       DateTime
+  usageLimit    Int? // null = không giới hạn
+  usedCount     Int        @default(0)
+  isActive      Boolean    @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@map("coupons")
+}
+
+// ======================================================
+// QUOTATION (BG) — yêu cầu báo giá B2B
+// ======================================================
+
+enum QuotationStatus {
+  NEW
+  IN_PROGRESS
+  SENT
+  WON
+  LOST
+}
+
+model QuotationRequest {
+  id           String          @id @default(cuid())
+  code         String?         @unique // ví dụ 0425/2026/LVC-BG, cấp khi xử lý
+  userId       String?
+  fullName     String
+  email        String
+  phone        String
+  company      String?
+  subject      String
+  message      String          @db.Text
+  // Danh sách sản phẩm/dịch vụ yêu cầu báo giá — JSON
+  items        Json?
+  attachments  String[] // URL file đính kèm (Cloudinary)
+  status       QuotationStatus @default(NEW)
+  assignedToId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User? @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  @@index([status])
+  @@map("quotation_requests")
+}
+
+// ======================================================
+// BLOG / TIN TỨC
+// ======================================================
+
+model BlogPost {
+  id              String    @id @default(cuid())
+  slug            String    @unique
+  title           String
+  excerpt         String?
+  content         String    @db.Text // MDX/HTML
+  coverImage      String?
+  authorId        String?
+  tags            String[]
+  publishedAt     DateTime?
+  isPublished     Boolean   @default(false)
+  // SEO
+  metaTitle       String?
+  metaDescription String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  author User? @relation("BlogAuthor", fields: [authorId], references: [id], onDelete: SetNull)
+
+  @@index([isPublished, publishedAt])
+  @@map("blog_posts")
+}
+
+// ======================================================
+// CONTACT / LIÊN HỆ
+// ======================================================
+
+enum ContactStatus {
+  NEW
+  READ
+  REPLIED
+  CLOSED
+}
+
+model ContactMessage {
+  id       String        @id @default(cuid())
+  name     String
+  email    String
+  phone    String?
+  subject  String?
+  message  String        @db.Text
+  status   ContactStatus @default(NEW)
+  ipAddress String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([status])
+  @@index([createdAt])
+  @@map("contact_messages")
+}
+
+// ======================================================
+// SETTINGS — key/value cấu hình toàn site
+// ======================================================
+
+model Setting {
+  key       String   @id
+  value     String   @db.Text // JSON string nếu cần
+  updatedAt DateTime @updatedAt
+
+  @@map("settings")
+}

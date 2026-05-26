@@ -1,0 +1,36 @@
+# Docker Compose cho môi trường dev LAVIPCO.
+# Sử dụng:
+#   docker compose up -d        # khởi động Postgres
+#   docker compose ps           # xem trạng thái
+#   docker compose logs -f db   # theo dõi log
+#   docker compose down         # dừng (giữ data)
+#   docker compose down -v      # dừng và XÓA toàn bộ data
+#
+# Lưu ý: cổng host mặc định là 5433 (không phải 5432) vì máy dev đang chạy
+# một Postgres khác ở 5432. Đổi sang 5432 nếu máy bạn không có xung đột.
+
+services:
+  db:
+    image: postgres:16-alpine
+    container_name: lavipco-pg
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: lavipco
+      # Buộc Postgres dùng UTF-8 và locale phù hợp tiếng Việt
+      POSTGRES_INITDB_ARGS: "--encoding=UTF-8 --locale=C"
+      TZ: Asia/Ho_Chi_Minh
+    ports:
+      - "5433:5432"
+    volumes:
+      - lavipco-pg-data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres -d lavipco"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+volumes:
+  lavipco-pg-data:
+    name: lavipco-pg-data
