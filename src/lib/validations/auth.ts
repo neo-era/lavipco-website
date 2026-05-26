@@ -4,7 +4,7 @@
  */
 import { z } from "zod";
 
-import { emailSchema, passwordSchema, fullNameSchema } from "./index";
+import { emailSchema, passwordSchema, fullNameSchema } from "./shared";
 
 export const signInSchema = z.object({
   email: emailSchema,
