@@ -33,6 +33,13 @@ export function formatDate(value: Date | string, pattern = "dd/MM/yyyy"): string
 }
 
 /**
+ * Định dạng ngày-giờ sang dd/MM/yyyy HH:mm theo locale tiếng Việt.
+ */
+export function formatDateTime(value: Date | string): string {
+  return formatDate(value, "dd/MM/yyyy HH:mm");
+}
+
+/**
  * Chuẩn hoá số điện thoại Việt Nam về dạng 0xxxxxxxxx.
  * - Bỏ khoảng trắng, dấu chấm, dấu gạch.
  * - +84 / 84 ở đầu được chuyển thành 0.
@@ -46,11 +53,12 @@ export function normalizePhoneVN(input: string): string {
 
 /**
  * Tạo slug từ chuỗi tiếng Việt (bỏ dấu, lowercase, dùng dấu gạch).
+ * @example slugify("Đèn tín hiệu giao thông") // "den-tin-hieu-giao-thong"
  */
 export function slugify(input: string): string {
   return input
     .normalize("NFD")
-    .replace(/[̀-ͯ]/g, "")
+    .replace(/[̀-ͯ]/g, "") // bỏ dấu kết hợp (combining diacritics)
     .replace(/đ/g, "d")
     .replace(/Đ/g, "D")
     .toLowerCase()
@@ -61,19 +69,28 @@ export function slugify(input: string): string {
 }
 
 /**
- * Sinh mã đơn hàng định dạng DHyyyymmddxxxx (xxxx là số chạy được cấp ngoài).
+ * Sinh mã đơn hàng theo định dạng DH<yyyymmdd><4-digit>.
+ *
+ * `sequence` là số chạy của đơn hàng trong ngày — caller phải cấp phát từ DB
+ * (ví dụ COUNT đơn hàng cùng ngày + 1) để đảm bảo unique. Nếu không cung cấp,
+ * sẽ dùng số ngẫu nhiên 4 chữ số (chỉ dùng cho prototype).
+ *
+ * @example generateOrderCode(1)  // "DH202605260001"
  */
-export function formatOrderCode(date: Date, sequence: number): string {
+export function generateOrderCode(sequence?: number, date: Date = new Date()): string {
   const y = date.getFullYear();
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
-  const seq = String(sequence).padStart(4, "0");
-  return `DH${y}${m}${d}${seq}`;
+  const seq = sequence ?? Math.floor(Math.random() * 9000) + 1000;
+  return `DH${y}${m}${d}${String(seq).padStart(4, "0")}`;
 }
 
 /**
- * Sinh mã báo giá định dạng <seq>/<năm>/LVC-BG, ví dụ 0425/2026/LVC-BG.
+ * Sinh mã báo giá nội bộ theo định dạng <seq>/<năm>/LVC-BG.
+ * `seq` là số chạy trong năm — caller cấp phát từ DB (COUNT báo giá trong năm + 1).
+ *
+ * @example generateQuoteCode(425) // "0425/2026/LVC-BG"
  */
-export function formatQuotationCode(year: number, sequence: number): string {
-  return `${String(sequence).padStart(4, "0")}/${year}/LVC-BG`;
+export function generateQuoteCode(seq: number, year: number = new Date().getFullYear()): string {
+  return `${String(seq).padStart(4, "0")}/${year}/LVC-BG`;
 }

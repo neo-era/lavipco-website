@@ -11,12 +11,12 @@ import {
   Settings,
 } from "lucide-react";
 
-import { siteConfig } from "@/lib/site-config";
+import { SITE_CONFIG } from "@/lib/constants";
 
 export const metadata: Metadata = {
   title: {
     default: "Quản trị",
-    template: "%s · Quản trị · " + siteConfig.name,
+    template: "%s · Quản trị · " + SITE_CONFIG.name,
   },
   robots: { index: false, follow: false },
 };
@@ -46,7 +46,7 @@ export default function AdminLayout({
               L
             </div>
             <div className="flex flex-col leading-tight">
-              <span className="text-sm font-bold text-brand-primary">{siteConfig.name}</span>
+              <span className="text-sm font-bold text-brand-primary">{SITE_CONFIG.name}</span>
               <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
                 Quản trị
               </span>
@@ -79,7 +79,7 @@ export default function AdminLayout({
       <main className="flex-1 overflow-x-hidden">
         <header className="border-b bg-background px-6 py-3 text-sm text-muted-foreground md:hidden">
           {/* Mobile: TODO menu burger; hiện skeleton sidebar */}
-          Quản trị · {siteConfig.name}
+          Quản trị · {SITE_CONFIG.name}
         </header>
         <div className="p-6">{children}</div>
       </main>

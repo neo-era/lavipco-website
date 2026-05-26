@@ -8,7 +8,7 @@ import { Menu, X, ShoppingCart, Phone } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { Button } from "@/components/ui/button";
 import { Container } from "@/components/layout/Container";
-import { mainNav, siteConfig } from "@/lib/site-config";
+import { MAIN_NAV, SITE_CONFIG } from "@/lib/constants";
 
 export function Header() {
   const pathname = usePathname();
@@ -29,27 +29,33 @@ export function Header() {
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      {/* Top bar - liên hệ nhanh */}
-      <div className="hidden border-b bg-brand-dark text-white md:block">
-        <Container className="flex h-9 items-center justify-between text-xs">
-          <div className="flex items-center gap-4">
-            <a
-              href={`tel:${siteConfig.contact.hotline.replace(/\s/g, "")}`}
-              className="flex items-center gap-1.5 hover:text-brand-accent"
-            >
-              <Phone className="h-3 w-3" />
-              Hotline: {siteConfig.contact.hotline}
-            </a>
-            <a
-              href={`mailto:${siteConfig.contact.email}`}
-              className="hover:text-brand-accent"
-            >
-              {siteConfig.contact.email}
-            </a>
-          </div>
-          <div className="text-white/70">{siteConfig.contact.workingHours}</div>
-        </Container>
-      </div>
+      {/* Top bar - liên hệ nhanh. Chỉ render khi có ít nhất 1 thông tin liên hệ. */}
+      {(SITE_CONFIG.hotline || SITE_CONFIG.email) && (
+        <div className="hidden border-b bg-brand-dark text-white md:block">
+          <Container className="flex h-9 items-center justify-between text-xs">
+            <div className="flex items-center gap-4">
+              {SITE_CONFIG.hotline && (
+                <a
+                  href={`tel:${SITE_CONFIG.hotline.replace(/\s/g, "")}`}
+                  className="flex items-center gap-1.5 hover:text-brand-accent"
+                >
+                  <Phone className="h-3 w-3" />
+                  Hotline: {SITE_CONFIG.hotline}
+                </a>
+              )}
+              {SITE_CONFIG.email && (
+                <a
+                  href={`mailto:${SITE_CONFIG.email}`}
+                  className="hover:text-brand-accent"
+                >
+                  {SITE_CONFIG.email}
+                </a>
+              )}
+            </div>
+            <div className="text-white/70">{SITE_CONFIG.workingHours}</div>
+          </Container>
+        </div>
+      )}
 
       {/* Main navigation */}
       <Container className="flex h-16 items-center justify-between">
@@ -59,7 +65,7 @@ export function Header() {
             L
           </div>
           <div className="flex flex-col leading-tight">
-            <span className="text-lg font-bold text-brand-primary">{siteConfig.name}</span>
+            <span className="text-lg font-bold text-brand-primary">{SITE_CONFIG.name}</span>
             <span className="hidden text-[10px] uppercase tracking-wider text-muted-foreground sm:inline">
               Kỹ Nghệ Lâm Việt Phát
             </span>
@@ -68,7 +74,7 @@ export function Header() {
 
         {/* Desktop nav */}
         <nav className="hidden items-center gap-1 lg:flex">
-          {mainNav.map((item) => (
+          {MAIN_NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
@@ -119,7 +125,7 @@ export function Header() {
       {isOpen && (
         <div className="border-t bg-background lg:hidden">
           <Container className="flex flex-col gap-1 py-3">
-            {mainNav.map((item) => (
+            {MAIN_NAV.map((item) => (
               <Link
                 key={item.href}
                 href={item.href}

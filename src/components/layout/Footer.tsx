@@ -2,7 +2,7 @@ import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 
 import { Container } from "@/components/layout/Container";
-import { footerNav, siteConfig } from "@/lib/site-config";
+import { FOOTER_NAV, SITE_CONFIG } from "@/lib/constants";
 
 // Lucide v1 không còn icon brand. Dùng inline SVG cho Facebook/YouTube.
 function FacebookIcon({ className }: { className?: string }) {
@@ -33,49 +33,55 @@ export function Footer() {
               <div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-primary font-bold text-white">
                 L
               </div>
-              <span className="text-lg font-bold text-white">{siteConfig.name}</span>
+              <span className="text-lg font-bold text-white">{SITE_CONFIG.name}</span>
             </Link>
-            <p className="text-sm leading-relaxed">{siteConfig.fullName}</p>
-            <p className="text-xs text-white/60">{siteConfig.contact.taxCode}</p>
+            <p className="text-sm leading-relaxed">{SITE_CONFIG.fullName}</p>
+            {SITE_CONFIG.taxCode && (
+              <p className="text-xs text-white/60">MST: {SITE_CONFIG.taxCode}</p>
+            )}
             <div className="space-y-1.5 text-sm">
-              <div className="flex items-start gap-2">
-                <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" />
-                <span>{siteConfig.contact.address}</span>
-              </div>
-              <div className="flex items-center gap-2">
-                <Phone className="h-4 w-4 shrink-0 text-brand-accent" />
-                <a href={`tel:${siteConfig.contact.hotline.replace(/\s/g, "")}`}>
-                  {siteConfig.contact.hotline}
-                </a>
-              </div>
-              <div className="flex items-center gap-2">
-                <Mail className="h-4 w-4 shrink-0 text-brand-accent" />
-                <a href={`mailto:${siteConfig.contact.email}`}>
-                  {siteConfig.contact.email}
-                </a>
-              </div>
+              {SITE_CONFIG.address && (
+                <div className="flex items-start gap-2">
+                  <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" />
+                  <span>{SITE_CONFIG.address}</span>
+                </div>
+              )}
+              {SITE_CONFIG.hotline && (
+                <div className="flex items-center gap-2">
+                  <Phone className="h-4 w-4 shrink-0 text-brand-accent" />
+                  <a href={`tel:${SITE_CONFIG.hotline.replace(/\s/g, "")}`}>
+                    {SITE_CONFIG.hotline}
+                  </a>
+                </div>
+              )}
+              {SITE_CONFIG.email && (
+                <div className="flex items-center gap-2">
+                  <Mail className="h-4 w-4 shrink-0 text-brand-accent" />
+                  <a href={`mailto:${SITE_CONFIG.email}`}>{SITE_CONFIG.email}</a>
+                </div>
+              )}
             </div>
           </div>
 
           {/* Dịch vụ */}
-          <FooterColumn title="Dịch vụ" items={footerNav.services} />
+          <FooterColumn title="Dịch vụ" items={FOOTER_NAV.services} />
 
           {/* Công ty */}
-          <FooterColumn title="Công ty" items={footerNav.company} />
+          <FooterColumn title="Công ty" items={FOOTER_NAV.company} />
 
           {/* Pháp lý */}
-          <FooterColumn title="Pháp lý" items={footerNav.legal} />
+          <FooterColumn title="Pháp lý" items={FOOTER_NAV.legal} />
         </div>
 
         {/* Bottom row */}
         <div className="mt-10 flex flex-col items-center justify-between gap-4 border-t border-white/10 pt-6 text-xs text-white/60 md:flex-row">
           <div>
-            © {year} {siteConfig.fullName}. Mọi quyền được bảo lưu.
+            © {year} {SITE_CONFIG.fullName}. Mọi quyền được bảo lưu.
           </div>
           <div className="flex items-center gap-3">
-            {siteConfig.social.facebook && (
+            {SITE_CONFIG.social.facebook && (
               <a
-                href={siteConfig.social.facebook}
+                href={SITE_CONFIG.social.facebook}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="Facebook"
@@ -84,9 +90,9 @@ export function Footer() {
                 <FacebookIcon className="h-4 w-4" />
               </a>
             )}
-            {siteConfig.social.youtube && (
+            {SITE_CONFIG.social.youtube && (
               <a
-                href={siteConfig.social.youtube}
+                href={SITE_CONFIG.social.youtube}
                 target="_blank"
                 rel="noopener noreferrer"
                 aria-label="YouTube"

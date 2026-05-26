@@ -2,7 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 
 import "./globals.css";
-import { siteConfig } from "@/lib/site-config";
+import { SITE_CONFIG } from "@/lib/constants";
 import { Toaster } from "@/components/ui/toaster";
 
 const inter = Inter({
@@ -12,12 +12,12 @@ const inter = Inter({
 });
 
 export const metadata: Metadata = {
-  metadataBase: new URL(siteConfig.url),
+  metadataBase: new URL(SITE_CONFIG.url),
   title: {
-    default: `${siteConfig.name} — ${siteConfig.tagline}`,
-    template: `%s | ${siteConfig.name}`,
+    default: `${SITE_CONFIG.name} — ${SITE_CONFIG.tagline}`,
+    template: `%s | ${SITE_CONFIG.name}`,
   },
-  description: siteConfig.description,
+  description: SITE_CONFIG.description,
   keywords: [
     "đèn tín hiệu giao thông",
     "chiếu sáng đô thị thông minh",
@@ -27,20 +27,20 @@ export const metadata: Metadata = {
     "LAVIPCO",
     "Lâm Việt Phát",
   ],
-  authors: [{ name: siteConfig.fullName }],
-  creator: siteConfig.fullName,
+  authors: [{ name: SITE_CONFIG.fullName }],
+  creator: SITE_CONFIG.fullName,
   openGraph: {
     type: "website",
     locale: "vi_VN",
-    url: siteConfig.url,
-    title: siteConfig.name,
-    description: siteConfig.description,
-    siteName: siteConfig.name,
+    url: SITE_CONFIG.url,
+    title: SITE_CONFIG.name,
+    description: SITE_CONFIG.description,
+    siteName: SITE_CONFIG.name,
   },
   twitter: {
     card: "summary_large_image",
-    title: siteConfig.name,
-    description: siteConfig.description,
+    title: SITE_CONFIG.name,
+    description: SITE_CONFIG.description,
   },
   robots: {
     index: true,
