@@ -21,6 +21,7 @@ import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
+import { ToastAction } from "@/components/ui/toast";
 import { RequestQuoteDialog } from "./RequestQuoteDialog";
 
 export type ProductInfoVariant = {
@@ -77,20 +78,36 @@ export function ProductInfo({ product, variants }: Props) {
 
   function handleAdd() {
     if (!selectedVariant || product.priceOnRequest) return;
-    addItem({
+    const { clamped } = addItem({
       productVariantId: selectedVariant.id,
       productSlug: product.slug,
       productName: product.name,
       variantName: selectedVariant.name,
       unitPrice: selectedVariant.price,
+      maxStock: selectedVariant.stock,
       image: cover,
       quantity,
     });
+
+    if (clamped) {
+      toast({
+        title: "Đã đạt giới hạn tồn kho",
+        description: `Chỉ còn ${selectedVariant.stock} sản phẩm cho biến thể này.`,
+        variant: "destructive",
+      });
+      return;
+    }
+
     toast({
-      title: "✓ Đã thêm vào giỏ",
+      title: "✓ Đã thêm vào giỏ hàng",
       description: selectedVariant.name
         ? `${product.name} (${selectedVariant.name}) × ${quantity}`
         : `${product.name} × ${quantity}`,
+      action: (
+        <ToastAction altText="Xem giỏ" onClick={() => router.push("/cart")}>
+          Xem giỏ
+        </ToastAction>
+      ),
     });
   }
 
@@ -102,6 +119,7 @@ export function ProductInfo({ product, variants }: Props) {
       productName: product.name,
       variantName: selectedVariant.name,
       unitPrice: selectedVariant.price,
+      maxStock: selectedVariant.stock,
       image: cover,
       quantity,
     });
