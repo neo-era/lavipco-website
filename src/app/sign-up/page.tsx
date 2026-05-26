@@ -4,6 +4,7 @@ import { redirect } from "next/navigation";
 
 import { auth } from "@/lib/auth";
 import { SITE_CONFIG } from "@/lib/constants";
+import { BrandLogo } from "@/components/common/BrandLogo";
 import { SignUpForm } from "./sign-up-form";
 
 export const metadata: Metadata = {
@@ -27,11 +28,8 @@ export default async function SignUpPage({
     <div className="flex min-h-screen items-center justify-center bg-muted/30 px-4 py-12">
       <div className="w-full max-w-md space-y-6">
         <div className="text-center">
-          <Link href="/" className="inline-flex items-center gap-2">
-            <div className="flex h-10 w-10 items-center justify-center rounded-md bg-brand-primary text-lg font-bold text-white">
-              L
-            </div>
-            <span className="text-xl font-bold text-brand-primary">{SITE_CONFIG.name}</span>
+          <Link href="/" className="inline-block" aria-label={SITE_CONFIG.name}>
+            <BrandLogo size="lg" />
           </Link>
         </div>
 

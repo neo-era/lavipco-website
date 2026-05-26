@@ -20,6 +20,7 @@ import { Container } from "@/components/layout/Container";
 import { CartIcon } from "@/components/layout/CartIcon";
 import { UserMenu } from "@/components/layout/UserMenu";
 import { SearchDialog } from "@/components/layout/SearchDialog";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 export function Header() {
   const pathname = usePathname();
@@ -97,11 +98,8 @@ export function Header() {
             <SheetContent side="left" className="w-72 p-0">
               <SheetHeader className="border-b px-4 py-3 text-left">
                 <SheetTitle>
-                  <Link href="/" className="flex items-center gap-2">
-                    <BrandLogo />
-                    <span className="text-base font-bold text-brand-primary">
-                      {SITE_CONFIG.name}
-                    </span>
+                  <Link href="/" className="inline-flex items-center" aria-label={SITE_CONFIG.name}>
+                    <BrandLogo size="sm" />
                   </Link>
                 </SheetTitle>
                 <SheetDescription className="sr-only">
@@ -133,17 +131,15 @@ export function Header() {
           </Sheet>
 
           {/* Logo */}
-          <Link href="/" className="flex items-center gap-2">
-            {/* TODO: thay BrandLogo bằng next/image khi có file logo SVG/PNG */}
-            <BrandLogo />
-            <div className="flex flex-col leading-tight">
-              <span className="text-lg font-bold text-brand-primary">
-                {SITE_CONFIG.name}
-              </span>
-              <span className="hidden text-[10px] uppercase tracking-wider text-muted-foreground sm:inline">
-                Kỹ Nghệ Lâm Việt Phát
-              </span>
-            </div>
+          <Link
+            href="/"
+            className="inline-flex items-center gap-2"
+            aria-label={`${SITE_CONFIG.name} - ${SITE_CONFIG.fullName}`}
+          >
+            <BrandLogo size="md" priority />
+            <span className="hidden text-[10px] uppercase tracking-wider text-muted-foreground sm:inline">
+              Kỹ Nghệ Lâm Việt Phát
+            </span>
           </Link>
         </div>
 
@@ -180,14 +176,3 @@ export function Header() {
   );
 }
 
-/**
- * Logo tạm — placeholder vuông "L".
- * TODO: thay bằng <Image src="/logo.svg" .../> khi có file logo chính thức.
- */
-function BrandLogo() {
-  return (
-    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-primary font-bold text-white">
-      L
-    </div>
-  );
-}

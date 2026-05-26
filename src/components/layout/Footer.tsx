@@ -2,6 +2,7 @@ import Link from "next/link";
 import { Phone, Mail, MapPin } from "lucide-react";
 
 import { Container } from "@/components/layout/Container";
+import { BrandLogo } from "@/components/common/BrandLogo";
 import { FOOTER_NAV, SITE_CONFIG } from "@/lib/constants";
 
 /**
@@ -17,12 +18,13 @@ export function Footer() {
         <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-4">
           {/* Cột 1: Về LAVIPCO */}
           <div className="space-y-4">
-            <Link href="/" className="flex items-center gap-2">
-              {/* TODO: thay bằng next/image với logo chính thức */}
-              <div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-primary font-bold text-white">
-                L
-              </div>
-              <span className="text-lg font-bold text-white">{SITE_CONFIG.name}</span>
+            <Link
+              href="/"
+              className="inline-flex items-center rounded-md bg-white p-2"
+              aria-label={SITE_CONFIG.name}
+            >
+              {/* White card wrap để logo (text xanh navy) đọc được trên nền tối */}
+              <BrandLogo size="md" />
             </Link>
             <p className="text-sm leading-relaxed">{SITE_CONFIG.fullName}</p>
             <p className="text-sm leading-relaxed text-white/60">

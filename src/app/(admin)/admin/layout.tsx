@@ -12,6 +12,7 @@ import {
 } from "lucide-react";
 
 import { SITE_CONFIG } from "@/lib/constants";
+import { BrandLogo } from "@/components/common/BrandLogo";
 
 export const metadata: Metadata = {
   title: {
@@ -41,16 +42,15 @@ export default function AdminLayout({
       {/* Sidebar */}
       <aside className="hidden w-64 shrink-0 border-r bg-background md:flex md:flex-col">
         <div className="border-b px-6 py-4">
-          <Link href="/admin/dashboard" className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-md bg-brand-primary text-sm font-bold text-white">
-              L
-            </div>
-            <div className="flex flex-col leading-tight">
-              <span className="text-sm font-bold text-brand-primary">{SITE_CONFIG.name}</span>
-              <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
-                Quản trị
-              </span>
-            </div>
+          <Link
+            href="/admin/dashboard"
+            className="flex items-center gap-2"
+            aria-label={`${SITE_CONFIG.name} - Quản trị`}
+          >
+            <BrandLogo size="sm" />
+            <span className="text-[10px] uppercase tracking-wider text-muted-foreground">
+              Quản trị
+            </span>
           </Link>
         </div>
         <nav className="flex-1 space-y-1 px-3 py-4">
