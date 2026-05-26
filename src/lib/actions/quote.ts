@@ -1,16 +1,22 @@
 "use server";
 
 /**
- * Server Action xử lý yêu cầu báo giá từ trang chi tiết dịch vụ/sản phẩm.
- * Lưu vào bảng ContactMessage để admin xử lý ở /admin/orders/quotes.
+ * Server Actions xử lý yêu cầu báo giá từ trang chi tiết dịch vụ/sản phẩm.
  *
- * Email thông báo cho admin: hiện chỉ console.log, sẽ tích hợp Resend
+ * 2 entry point chia sẻ chung `processQuote(input)`:
+ *  - `requestQuote(prev, formData)` — cho useFormState (form HTML cổ điển)
+ *  - `submitQuote(input)` — cho RHF/JSON (form modern, Dialog popup)
+ *
+ * Email gửi admin: hiện console.log placeholder, sẽ tích hợp Resend
  * ở src/lib/email/ trong Phase tiếp theo.
  */
 import { headers } from "next/headers";
 
 import { db } from "@/lib/db";
-import { quoteRequestSchema } from "@/lib/validations/quote";
+import {
+  quoteRequestSchema,
+  type QuoteRequestInput,
+} from "@/lib/validations/quote";
 import { SITE_CONFIG } from "@/lib/constants";
 
 export type QuoteFormState = {
@@ -21,30 +27,10 @@ export type QuoteFormState = {
   fieldErrors?: Partial<Record<string, string[]>>;
 };
 
-export async function requestQuote(
-  _prev: QuoteFormState | undefined,
-  formData: FormData,
-): Promise<QuoteFormState> {
-  // Parse + validate
-  const parsed = quoteRequestSchema.safeParse({
-    name: formData.get("name"),
-    email: formData.get("email"),
-    phone: formData.get("phone"),
-    message: formData.get("message"),
-    serviceSlug: formData.get("serviceSlug") || undefined,
-    productSlug: formData.get("productSlug") || undefined,
-  });
+async function processQuote(input: QuoteRequestInput): Promise<QuoteFormState> {
+  const { name, email, phone, message, serviceSlug, productSlug } = input;
 
-  if (!parsed.success) {
-    return {
-      ok: false,
-      fieldErrors: parsed.error.flatten().fieldErrors,
-    };
-  }
-
-  const { name, email, phone, message, serviceSlug, productSlug } = parsed.data;
-
-  // Build subject từ slug đã pass
+  // Build subject từ slug
   let subjectPrefix = "Yêu cầu báo giá";
   if (serviceSlug) {
     const service = await db.service.findUnique({
@@ -60,7 +46,7 @@ export async function requestQuote(
     if (product) subjectPrefix = `Báo giá: ${product.name}`;
   }
 
-  // Lấy IP để log/chống spam cơ bản (best-effort, không bắt buộc)
+  // Lấy IP (best-effort)
   let ipAddress: string | null = null;
   try {
     const h = await headers();
@@ -69,7 +55,7 @@ export async function requestQuote(
       h.get("x-real-ip") ||
       null;
   } catch {
-    // Bỏ qua nếu không lấy được
+    // ignore
   }
 
   try {
@@ -84,15 +70,14 @@ export async function requestQuote(
       },
     });
   } catch (error) {
-    console.error("[requestQuote] Lỗi khi lưu ContactMessage", error);
+    console.error("[processQuote] Lỗi lưu ContactMessage", error);
     return {
       ok: false,
       error: "Không gửi được yêu cầu, vui lòng thử lại sau ít phút.",
     };
   }
 
-  // TODO: tích hợp Resend ở src/lib/email/ - gửi email cho admin
-  // Khi có: await sendQuoteNotification({ to: SITE_CONFIG.email, ... })
+  // TODO: gửi email cho admin qua Resend (src/lib/email/)
   console.log("[email] TODO gửi báo cho admin về yêu cầu báo giá", {
     to: SITE_CONFIG.email || "admin@lavipco.com.vn",
     subject: subjectPrefix,
@@ -100,4 +85,37 @@ export async function requestQuote(
   });
 
   return { ok: true, submittedAt: Date.now() };
+}
+
+/**
+ * Entry point cho form HTML cổ điển (useFormState ở trang chi tiết Dịch vụ).
+ */
+export async function requestQuote(
+  _prev: QuoteFormState | undefined,
+  formData: FormData,
+): Promise<QuoteFormState> {
+  const parsed = quoteRequestSchema.safeParse({
+    name: formData.get("name"),
+    email: formData.get("email"),
+    phone: formData.get("phone"),
+    message: formData.get("message"),
+    serviceSlug: formData.get("serviceSlug") || undefined,
+    productSlug: formData.get("productSlug") || undefined,
+  });
+  if (!parsed.success) {
+    return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+  return processQuote(parsed.data);
+}
+
+/**
+ * Entry point cho RHF / fetch JSON.
+ * Server re-validate để chống tamper kể cả khi client đã validate.
+ */
+export async function submitQuote(input: QuoteRequestInput): Promise<QuoteFormState> {
+  const parsed = quoteRequestSchema.safeParse(input);
+  if (!parsed.success) {
+    return { ok: false, fieldErrors: parsed.error.flatten().fieldErrors };
+  }
+  return processQuote(parsed.data);
 }

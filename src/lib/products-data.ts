@@ -119,3 +119,41 @@ export function isNewProduct(createdAt: Date): boolean {
   const days = (Date.now() - createdAt.getTime()) / (1000 * 60 * 60 * 24);
   return days <= NEW_PRODUCT_DAYS;
 }
+
+// ====================================================================
+// Spec labels: dịch key tiếng Anh trong Product.specs (JSON) → tiếng Việt
+// Render bảng "Thông số kỹ thuật" ở trang chi tiết.
+// ====================================================================
+
+export const SPEC_LABEL: Record<string, string> = {
+  power: "Công suất",
+  voltage: "Điện áp",
+  ipRating: "Cấp bảo vệ (IP)",
+  cct: "Nhiệt độ màu",
+  lumen: "Quang thông",
+  beamAngle: "Góc chiếu",
+  material: "Vật liệu",
+  dimensions: "Kích thước",
+  weight: "Trọng lượng",
+  warranty: "Bảo hành",
+  standards: "Tiêu chuẩn áp dụng",
+  size: "Kích cỡ",
+  color: "Màu sắc",
+};
+
+export function getSpecLabel(key: string): string {
+  return SPEC_LABEL[key] ?? key;
+}
+
+/**
+ * Định dạng value trong Product.specs cho hiển thị bảng.
+ * - Array (vd: standards) → join với ", "
+ * - Object → JSON.stringify (hiếm gặp)
+ * - Khác → String(value)
+ */
+export function formatSpecValue(value: unknown): string {
+  if (value === null || value === undefined) return "—";
+  if (Array.isArray(value)) return value.join(", ");
+  if (typeof value === "object") return JSON.stringify(value);
+  return String(value);
+}
