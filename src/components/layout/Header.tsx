@@ -3,33 +3,55 @@
 import * as React from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import { Menu, X, ShoppingCart, Phone } from "lucide-react";
+import { Menu, Search, Phone } from "lucide-react";
 
 import { cn } from "@/lib/utils";
-import { Button } from "@/components/ui/button";
-import { Container } from "@/components/layout/Container";
 import { MAIN_NAV, SITE_CONFIG } from "@/lib/constants";
+import { Button } from "@/components/ui/button";
+import {
+  Sheet,
+  SheetContent,
+  SheetDescription,
+  SheetHeader,
+  SheetTitle,
+  SheetTrigger,
+} from "@/components/ui/sheet";
+import { Container } from "@/components/layout/Container";
+import { CartIcon } from "@/components/layout/CartIcon";
+import { UserMenu } from "@/components/layout/UserMenu";
+import { SearchDialog } from "@/components/layout/SearchDialog";
 
 export function Header() {
   const pathname = usePathname();
-  const [isOpen, setIsOpen] = React.useState(false);
+  const [scrolled, setScrolled] = React.useState(false);
+  const [mobileOpen, setMobileOpen] = React.useState(false);
 
   const isActive = React.useCallback(
-    (href: string) => {
-      if (href === "/") return pathname === "/";
-      return pathname.startsWith(href);
-    },
+    (href: string) => (href === "/" ? pathname === "/" : pathname.startsWith(href)),
     [pathname],
   );
 
-  // Đóng menu khi điều hướng
+  // Theo dõi scroll để thêm shadow lúc cuộn xuống
   React.useEffect(() => {
-    setIsOpen(false);
+    const onScroll = () => setScrolled(window.scrollY > 8);
+    onScroll();
+    window.addEventListener("scroll", onScroll, { passive: true });
+    return () => window.removeEventListener("scroll", onScroll);
+  }, []);
+
+  // Đóng mobile sheet khi điều hướng
+  React.useEffect(() => {
+    setMobileOpen(false);
   }, [pathname]);
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/80">
-      {/* Top bar - liên hệ nhanh. Chỉ render khi có ít nhất 1 thông tin liên hệ. */}
+    <header
+      className={cn(
+        "sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur transition-shadow supports-[backdrop-filter]:bg-background/80",
+        scrolled ? "shadow-md" : "shadow-none",
+      )}
+    >
+      {/* Top bar liên hệ - desktop. Ẩn nếu không có hotline & email */}
       {(SITE_CONFIG.hotline || SITE_CONFIG.email) && (
         <div className="hidden border-b bg-brand-dark text-white md:block">
           <Container className="flex h-9 items-center justify-between text-xs">
@@ -57,32 +79,83 @@ export function Header() {
         </div>
       )}
 
-      {/* Main navigation */}
-      <Container className="flex h-16 items-center justify-between">
-        {/* Logo */}
-        <Link href="/" className="flex items-center gap-2">
-          <div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-primary text-white font-bold">
-            L
-          </div>
-          <div className="flex flex-col leading-tight">
-            <span className="text-lg font-bold text-brand-primary">{SITE_CONFIG.name}</span>
-            <span className="hidden text-[10px] uppercase tracking-wider text-muted-foreground sm:inline">
-              Kỹ Nghệ Lâm Việt Phát
-            </span>
-          </div>
-        </Link>
+      {/* Main nav */}
+      <Container className="flex h-16 items-center justify-between gap-4">
+        {/* Mobile menu button (trái) + Logo */}
+        <div className="flex items-center gap-2">
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="lg:hidden"
+                aria-label="Mở menu"
+              >
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="w-72 p-0">
+              <SheetHeader className="border-b px-4 py-3 text-left">
+                <SheetTitle>
+                  <Link href="/" className="flex items-center gap-2">
+                    <BrandLogo />
+                    <span className="text-base font-bold text-brand-primary">
+                      {SITE_CONFIG.name}
+                    </span>
+                  </Link>
+                </SheetTitle>
+                <SheetDescription className="sr-only">
+                  Điều hướng chính
+                </SheetDescription>
+              </SheetHeader>
+              <nav className="flex flex-col gap-1 p-3">
+                {MAIN_NAV.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    className={cn(
+                      "rounded-md px-3 py-2 text-base font-medium transition-colors",
+                      isActive(item.href)
+                        ? "bg-brand-primary/10 text-brand-primary"
+                        : "text-foreground/80 hover:bg-muted",
+                    )}
+                  >
+                    {item.title}
+                  </Link>
+                ))}
+                <div className="mt-3 border-t pt-3">
+                  <Button asChild variant="brand" className="w-full">
+                    <Link href="/contact">Yêu cầu báo giá</Link>
+                  </Button>
+                </div>
+              </nav>
+            </SheetContent>
+          </Sheet>
 
-        {/* Desktop nav */}
-        <nav className="hidden items-center gap-1 lg:flex">
+          {/* Logo */}
+          <Link href="/" className="flex items-center gap-2">
+            {/* TODO: thay BrandLogo bằng next/image khi có file logo SVG/PNG */}
+            <BrandLogo />
+            <div className="flex flex-col leading-tight">
+              <span className="text-lg font-bold text-brand-primary">
+                {SITE_CONFIG.name}
+              </span>
+              <span className="hidden text-[10px] uppercase tracking-wider text-muted-foreground sm:inline">
+                Kỹ Nghệ Lâm Việt Phát
+              </span>
+            </div>
+          </Link>
+        </div>
+
+        {/* Desktop nav - giữa */}
+        <nav className="hidden flex-1 items-center justify-center gap-1 lg:flex">
           {MAIN_NAV.map((item) => (
             <Link
               key={item.href}
               href={item.href}
               className={cn(
                 "rounded-md px-3 py-2 text-sm font-medium transition-colors hover:text-brand-primary",
-                isActive(item.href)
-                  ? "text-brand-primary"
-                  : "text-foreground/70",
+                isActive(item.href) ? "text-brand-primary" : "text-foreground/70",
               )}
             >
               {item.title}
@@ -90,68 +163,31 @@ export function Header() {
           ))}
         </nav>
 
-        {/* Actions */}
-        <div className="flex items-center gap-2">
-          <Button
-            asChild
-            variant="ghost"
-            size="icon"
-            className="hidden md:inline-flex"
-            aria-label="Giỏ hàng"
-          >
-            <Link href="/cart">
-              <ShoppingCart className="h-5 w-5" />
-            </Link>
-          </Button>
-          <Button asChild variant="brand" size="sm" className="hidden md:inline-flex">
-            <Link href="/contact">Yêu cầu báo giá</Link>
-          </Button>
-
-          {/* Mobile menu toggle */}
-          <Button
-            variant="ghost"
-            size="icon"
-            className="lg:hidden"
-            onClick={() => setIsOpen((v) => !v)}
-            aria-label="Mở menu"
-            aria-expanded={isOpen}
-          >
-            {isOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
-          </Button>
+        {/* Right actions */}
+        <div className="flex items-center gap-1">
+          <SearchDialog
+            trigger={
+              <Button variant="ghost" size="icon" aria-label="Tìm kiếm">
+                <Search className="h-5 w-5" />
+              </Button>
+            }
+          />
+          <CartIcon />
+          <UserMenu />
         </div>
       </Container>
-
-      {/* Mobile drawer */}
-      {isOpen && (
-        <div className="border-t bg-background lg:hidden">
-          <Container className="flex flex-col gap-1 py-3">
-            {MAIN_NAV.map((item) => (
-              <Link
-                key={item.href}
-                href={item.href}
-                className={cn(
-                  "rounded-md px-3 py-2 text-base font-medium",
-                  isActive(item.href)
-                    ? "bg-brand-primary/10 text-brand-primary"
-                    : "text-foreground/80 hover:bg-muted",
-                )}
-              >
-                {item.title}
-              </Link>
-            ))}
-            <div className="mt-2 flex gap-2 border-t pt-3">
-              <Button asChild variant="brand" className="flex-1">
-                <Link href="/contact">Yêu cầu báo giá</Link>
-              </Button>
-              <Button asChild variant="outline" size="icon" aria-label="Giỏ hàng">
-                <Link href="/cart">
-                  <ShoppingCart className="h-5 w-5" />
-                </Link>
-              </Button>
-            </div>
-          </Container>
-        </div>
-      )}
     </header>
+  );
+}
+
+/**
+ * Logo tạm — placeholder vuông "L".
+ * TODO: thay bằng <Image src="/logo.svg" .../> khi có file logo chính thức.
+ */
+function BrandLogo() {
+  return (
+    <div className="flex h-9 w-9 items-center justify-center rounded-md bg-brand-primary font-bold text-white">
+      L
+    </div>
   );
 }

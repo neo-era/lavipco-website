@@ -138,22 +138,20 @@ export const MAIN_NAV = [
 ] as const;
 
 export const FOOTER_NAV = {
-  company: [
+  quickLinks: [
     { title: "Giới thiệu", href: "/about" },
-    { title: "Dự án đã thực hiện", href: "/projects" },
+    { title: "Dịch vụ", href: "/services" },
+    { title: "Dự án", href: "/projects" },
+    { title: "Sản phẩm", href: "/products" },
     { title: "Tin tức", href: "/blog" },
     { title: "Liên hệ", href: "/contact" },
   ],
-  services: [
-    { title: "Đèn tín hiệu giao thông", href: "/services#traffic-light" },
-    { title: "Chiếu sáng đô thị thông minh", href: "/services#smart-lighting" },
-    { title: "Chiếu sáng cảnh quan", href: "/services#landscape" },
-    { title: "Hạ tầng điện", href: "/services#power-infra" },
-  ],
-  legal: [
+  support: [
+    { title: "Hướng dẫn mua hàng", href: "/guide" },
+    { title: "Câu hỏi thường gặp", href: "/faq" },
+    { title: "Chính sách bảo hành", href: "/warranty" },
+    { title: "Chính sách đổi trả", href: "/return-policy" },
     { title: "Chính sách bảo mật", href: "/privacy" },
     { title: "Điều khoản sử dụng", href: "/terms" },
-    { title: "Chính sách đổi trả", href: "/return-policy" },
-    { title: "Chính sách bảo hành", href: "/warranty" },
   ],
 } as const;
