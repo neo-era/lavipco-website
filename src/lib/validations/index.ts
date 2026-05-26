@@ -10,5 +10,5 @@
 export * from "./shared";
 export * from "./auth";
 export * from "./quote";
-// export * from "./contact";
+export * from "./contact";
 // export * from "./product";
