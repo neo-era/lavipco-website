@@ -52,6 +52,23 @@ export function normalizePhoneVN(input: string): string {
 }
 
 /**
+ * Bỏ dấu tiếng Việt, lowercase, GIỮ khoảng trắng (khác slugify).
+ * Dùng cho field `nameNoAccent` ở DB để search không dấu match có dấu.
+ *
+ * @example removeVietnameseAccents("Đèn LED 150W Smart") // "den led 150w smart"
+ */
+export function removeVietnameseAccents(input: string): string {
+  return input
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "") // bỏ combining diacritics (U+0300 - U+036F)
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+/**
  * Tạo slug từ chuỗi tiếng Việt (bỏ dấu, lowercase, dùng dấu gạch).
  * @example slugify("Đèn tín hiệu giao thông") // "den-tin-hieu-giao-thong"
  */

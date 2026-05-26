@@ -11,6 +11,18 @@
 import { PrismaClient, ProductStatus, ProjectCategory, UserRole } from "@prisma/client";
 import bcrypt from "bcryptjs";
 
+// Inline để tránh import từ src/ (seed chạy bằng tsx ngoài Next.js context)
+function removeVietnameseAccents(input: string): string {
+  return input
+    .normalize("NFD")
+    .replace(/[̀-ͯ]/g, "")
+    .replace(/đ/g, "d")
+    .replace(/Đ/g, "D")
+    .toLowerCase()
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
 const db = new PrismaClient();
 
 async function main() {
@@ -290,10 +302,13 @@ async function main() {
     const categoryId = categoryMap[categorySlug];
     if (!categoryId) throw new Error(`Không tìm thấy category slug ${categorySlug}`);
 
+    const nameNoAccent = removeVietnameseAccents(rest.name);
+    const data = { ...rest, categoryId, nameNoAccent };
+
     const product = await db.product.upsert({
       where: { slug: p.slug },
-      update: { ...rest, categoryId },
-      create: { ...rest, categoryId },
+      update: data,
+      create: data,
     });
     productCount++;
 

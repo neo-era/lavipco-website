@@ -2,17 +2,18 @@
 
 /**
  * Tìm kiếm sản phẩm theo từ khoá.
- * - Tìm trong: name, slug, shortDescription, description, brand
+ * - Tìm trong: name, nameNoAccent, slug, shortDescription, description, brand
  * - Case-insensitive `contains` (Prisma `mode: "insensitive"`)
  * - Chỉ trả sản phẩm ACTIVE
  *
- * LƯU Ý tiếng Việt có dấu/không dấu:
- *   ILIKE/contains insensitive KHÔNG ignore dấu — "den" sẽ không match "đèn".
- *   TODO: thêm field `nameNoAccent` (slugify khi insert/update) + migration để
- *   search không dấu chính xác hơn. Hoặc bật Postgres extension `unaccent`
- *   (cần superuser CREATE EXTENSION unaccent + tsvector index).
+ * Hỗ trợ tiếng Việt có dấu/không dấu:
+ *   Khi user gõ "den" → query thêm field `nameNoAccent` (đã lowercase +
+ *   bỏ dấu) → trúng "Đèn LED..." (nameNoAccent="den led..."). Field
+ *   nameNoAccent được auto-fill ở seed/admin CRUD bằng
+ *   removeVietnameseAccents() từ @/lib/utils.
  */
 import { db } from "@/lib/db";
+import { removeVietnameseAccents } from "@/lib/utils";
 
 export type SearchProductResult = {
   id: string;
@@ -35,12 +36,15 @@ export async function searchProducts(
   if (q.length < 2) return [];
 
   const take = Math.max(1, Math.min(MAX_LIMIT, limit));
+  const qNoAccent = removeVietnameseAccents(q);
 
   const products = await db.product.findMany({
     where: {
       status: "ACTIVE",
       OR: [
         { name: { contains: q, mode: "insensitive" } },
+        // nameNoAccent đã lowercase + bỏ dấu → contains insensitive cũng OK
+        { nameNoAccent: { contains: qNoAccent, mode: "insensitive" } },
         { slug: { contains: q, mode: "insensitive" } },
         { shortDescription: { contains: q, mode: "insensitive" } },
         { description: { contains: q, mode: "insensitive" } },

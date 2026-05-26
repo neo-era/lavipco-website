@@ -3,6 +3,7 @@ import type { Prisma } from "@prisma/client";
 
 import { db } from "@/lib/db";
 import { SITE_CONFIG } from "@/lib/constants";
+import { removeVietnameseAccents } from "@/lib/utils";
 import {
   PRODUCTS_PAGE_SIZE,
   buildProductsUrl,
@@ -77,9 +78,12 @@ export default async function ProductsPage({
     };
   }
   if (filters.q) {
+    const qNoAccent = removeVietnameseAccents(filters.q);
     where.OR = [
       { name: { contains: filters.q, mode: "insensitive" } },
+      { nameNoAccent: { contains: qNoAccent, mode: "insensitive" } },
       { shortDescription: { contains: filters.q, mode: "insensitive" } },
+      { brand: { contains: filters.q, mode: "insensitive" } },
     ];
   }
 

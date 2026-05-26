@@ -147,6 +147,10 @@ model Product {
   id              String        @id @default(cuid())
   slug            String        @unique
   name            String
+  // Phiên bản name đã bỏ dấu + lowercase + giữ space, dùng cho search
+  // tiếng Việt không dấu match có dấu (vd "den" match "Đèn"). Auto-fill
+  // ở admin CRUD và seed bằng removeVietnameseAccents() từ utils.ts.
+  nameNoAccent    String        @default("")
   description     String?       @db.Text
   shortDescription String?
   basePrice       Decimal       @db.Decimal(14, 2)
@@ -173,6 +177,7 @@ model Product {
   @@index([categoryId])
   @@index([status])
   @@index([isFeatured])
+  @@index([nameNoAccent])
   @@map("products")
 }
 
