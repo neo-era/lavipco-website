@@ -64,7 +64,7 @@ export const fullNameSchema = z
 // ====================================================================
 // Re-export domain schemas (bổ sung khi tạo file mới)
 // ====================================================================
+export * from "./auth";
 // export * from "./contact";
-// export * from "./auth";
 // export * from "./product";
 // export * from "./quotation";
