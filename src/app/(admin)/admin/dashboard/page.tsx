@@ -27,8 +27,9 @@ import { UnreadMessagesPanel } from "@/components/admin/UnreadMessagesPanel";
 
 export const metadata: Metadata = { title: "Tổng quan" };
 
-// Revalidate 60s — admin dashboard không cần realtime tuyệt đối
-export const revalidate = 60;
+// Admin pages KHÔNG nên pre-render: data realtime + yêu cầu session auth.
+// force-dynamic để build skip query DB, mỗi request render fresh.
+export const dynamic = "force-dynamic";
 
 const ALL_ORDER_STATUSES: OrderStatus[] = [
   "PENDING",
