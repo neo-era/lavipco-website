@@ -39,7 +39,6 @@ const METHODS: Array<{
     label: "VNPay",
     description: "Thanh toán qua cổng VNPay (ATM/QR/Visa).",
     Icon: CreditCard,
-    badge: "Sắp ra mắt",
   },
   {
     value: "MOMO",
@@ -66,7 +65,7 @@ export function PaymentMethodPicker() {
             <div className="space-y-2" role="radiogroup">
               {METHODS.map((m) => {
                 const active = field.value === m.value;
-                const disabled = m.value === "VNPAY" || m.value === "MOMO";
+                const disabled = m.value === "MOMO";
                 return (
                   <label
                     key={m.value}

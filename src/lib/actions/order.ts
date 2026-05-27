@@ -16,6 +16,7 @@
  *      - COD/BANK_TRANSFER → /checkout/success?code=<code>
  *      - VNPay/MoMo → URL gateway (TODO Phase 4.3, hiện trả /success placeholder)
  */
+import { headers } from "next/headers";
 import { revalidatePath } from "next/cache";
 import { Prisma, PaymentMethod } from "@prisma/client";
 
@@ -26,6 +27,7 @@ import {
   calculateShippingFee,
   estimateOrderWeight,
 } from "@/lib/shipping";
+import { createPaymentUrl as createVnpayUrl, VNPAY_ENABLED } from "@/lib/payment/vnpay";
 import { validateCoupon } from "./coupon";
 import { generateOrderCode } from "@/lib/utils";
 
@@ -207,9 +209,31 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
 
     // 8. Build redirect URL theo phương thức thanh toán
     let redirectUrl = `/checkout/success?code=${order.code}`;
+
     if (data.paymentMethod === PaymentMethod.VNPAY) {
-      // TODO Phase 4.3: gọi createVnpayUrl(order) → return payment gateway URL
-      redirectUrl = `/checkout/success?code=${order.code}&pending=vnpay`;
+      if (!VNPAY_ENABLED) {
+        // Env chưa setup → vẫn tạo order nhưng cảnh báo
+        console.warn("[createOrder] VNPay chưa cấu hình, redirect /success với pending=vnpay");
+        redirectUrl = `/checkout/success?code=${order.code}&pending=vnpay`;
+      } else {
+        // Lấy client IP để pass vào VNPay
+        let ipAddr = "127.0.0.1";
+        try {
+          const h = await headers();
+          ipAddr =
+            h.get("x-forwarded-for")?.split(",")[0].trim() ||
+            h.get("x-real-ip") ||
+            "127.0.0.1";
+        } catch {
+          // ignore
+        }
+        redirectUrl = createVnpayUrl({
+          orderId: order.code,
+          amount: Number(order.total),
+          orderInfo: `Thanh toan don hang ${order.code}`,
+          ipAddr,
+        });
+      }
     } else if (data.paymentMethod === PaymentMethod.MOMO) {
       // TODO: tích hợp MoMo
       redirectUrl = `/checkout/success?code=${order.code}&pending=momo`;
