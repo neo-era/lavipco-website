@@ -528,9 +528,29 @@ model ContactMessage {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
+  replies ContactReply[]
+
   @@index([status])
   @@index([createdAt])
   @@map("contact_messages")
+}
+
+/**
+ * Lưu lịch sử reply của admin cho mỗi ContactMessage.
+ * Cho phép nhiều reply cho 1 message (gửi nhiều lần, follow-up).
+ */
+model ContactReply {
+  id           String   @id @default(cuid())
+  messageId    String
+  byUserId     String? // admin/staff thực hiện reply
+  body         String   @db.Text
+  sentEmail    Boolean  @default(true) // true = đã gửi qua email; false = chỉ ghi log nội bộ
+  createdAt    DateTime @default(now())
+
+  message ContactMessage @relation(fields: [messageId], references: [id], onDelete: Cascade)
+
+  @@index([messageId, createdAt])
+  @@map("contact_replies")
 }
 
 // ======================================================
