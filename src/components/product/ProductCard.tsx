@@ -7,6 +7,7 @@ import { isNewProduct } from "@/lib/products-data";
 import { Badge } from "@/components/ui/badge";
 import { Card } from "@/components/ui/card";
 import { AddToCartButton } from "./AddToCartButton";
+import { WishlistButton } from "./WishlistButton";
 
 export type ProductCardData = {
   id: string;
@@ -53,6 +54,7 @@ export function ProductCard({ product, view = "grid" }: Props) {
         <div className="relative aspect-[4/3] w-full overflow-hidden rounded-md bg-gradient-to-br from-brand-primary/10 to-brand-accent/10 sm:aspect-square sm:w-48 sm:shrink-0">
           <CoverImage cover={cover} name={product.name} />
           <BadgesOverlay isNew={isNew} isFeatured={product.isFeatured} outOfStock={outOfStock} />
+          <WishlistButton productId={product.id} className="absolute right-2 top-2" />
         </div>
         <div className="flex flex-1 flex-col">
           {product.brand && (
@@ -97,6 +99,7 @@ export function ProductCard({ product, view = "grid" }: Props) {
       <div className="relative aspect-square overflow-hidden bg-gradient-to-br from-brand-primary/10 to-brand-accent/10">
         <CoverImage cover={cover} name={product.name} />
         <BadgesOverlay isNew={isNew} isFeatured={product.isFeatured} outOfStock={outOfStock} />
+        <WishlistButton productId={product.id} className="absolute right-2 top-2" />
       </div>
       <div className="flex flex-1 flex-col p-4">
         {product.brand && (

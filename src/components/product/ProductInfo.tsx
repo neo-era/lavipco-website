@@ -23,6 +23,7 @@ import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { ToastAction } from "@/components/ui/toast";
 import { RequestQuoteDialog } from "./RequestQuoteDialog";
+import { WishlistButton } from "./WishlistButton";
 
 export type ProductInfoVariant = {
   id: string;
@@ -35,6 +36,7 @@ export type ProductInfoVariant = {
 
 type Props = {
   product: {
+    id: string;
     slug: string;
     name: string;
     brand: string | null;
@@ -46,11 +48,12 @@ type Props = {
     catalogueUrl: string | null;
   };
   variants: ProductInfoVariant[];
+  initialIsInWishlist?: boolean | null;
 };
 
 const MAX_QTY = 99;
 
-export function ProductInfo({ product, variants }: Props) {
+export function ProductInfo({ product, variants, initialIsInWishlist }: Props) {
   const router = useRouter();
   const addItem = useCartStore((s) => s.addItem);
   const { toast } = useToast();
@@ -307,6 +310,13 @@ export function ProductInfo({ product, variants }: Props) {
             Yêu cầu báo giá
           </Button>
         </RequestQuoteDialog>
+
+        <WishlistButton
+          productId={product.id}
+          initialIsInWishlist={initialIsInWishlist}
+          variant="with-label"
+          className="w-full justify-center"
+        />
       </div>
 
       {/* Box thông tin chính sách */}

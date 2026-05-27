@@ -42,6 +42,7 @@ model User {
   orders            Order[]
   quotationRequests QuotationRequest[]
   blogPosts         BlogPost[]         @relation("BlogAuthor")
+  wishlistItems     WishlistItem[]
 
   @@index([role])
   @@map("users")
@@ -171,14 +172,33 @@ model Product {
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  category Category         @relation(fields: [categoryId], references: [id])
-  variants ProductVariant[]
+  category      Category         @relation(fields: [categoryId], references: [id])
+  variants      ProductVariant[]
+  wishlistItems WishlistItem[]
 
   @@index([categoryId])
   @@index([status])
   @@index([isFeatured])
   @@index([nameNoAccent])
   @@map("products")
+}
+
+// ======================================================
+// WISHLIST (Yêu thích)
+// ======================================================
+
+model WishlistItem {
+  id        String   @id @default(cuid())
+  userId    String
+  productId String
+  createdAt DateTime @default(now())
+
+  user    User    @relation(fields: [userId], references: [id], onDelete: Cascade)
+  product Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId])
+  @@index([userId])
+  @@map("wishlist_items")
 }
 
 model ProductVariant {

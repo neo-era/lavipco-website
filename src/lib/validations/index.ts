@@ -13,4 +13,6 @@ export * from "./quote";
 export * from "./contact";
 export * from "./checkout";
 export * from "./coupon";
+export * from "./address";
+export * from "./password";
 // export * from "./product";

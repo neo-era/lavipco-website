@@ -4,7 +4,20 @@ import * as React from "react";
 import { useFormContext } from "react-hook-form";
 
 import type { Province, District, Ward } from "@/lib/regions";
-import type { CheckoutInput } from "@/lib/validations/checkout";
+
+/**
+ * Subset field mà AddressFields cần. Cả CheckoutInput và AddressInput
+ * đều có 7 field này nên reuse được component qua FormProvider chung.
+ */
+type AddressFormShape = {
+  provinceCode: string;
+  provinceName: string;
+  districtCode: string;
+  districtName: string;
+  wardCode: string;
+  wardName: string;
+  street: string;
+};
 import {
   FormControl,
   FormField,
@@ -29,7 +42,7 @@ import { Input } from "@/components/ui/input";
  *   - <field>Name (lưu để snapshot + GHN lookup)
  */
 export function AddressFields() {
-  const form = useFormContext<CheckoutInput>();
+  const form = useFormContext<AddressFormShape>();
   const [provinces, setProvinces] = React.useState<Province[]>([]);
   const [districts, setDistricts] = React.useState<District[]>([]);
   const [wards, setWards] = React.useState<Ward[]>([]);

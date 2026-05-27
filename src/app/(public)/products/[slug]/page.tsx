@@ -13,6 +13,7 @@ import {
 import { ProductTabs } from "@/components/product/ProductTabs";
 import { ProductRelated } from "@/components/product/ProductRelated";
 import { RecentlyViewed } from "@/components/product/RecentlyViewed";
+import { isInWishlist } from "@/lib/actions/wishlist";
 
 export const revalidate = 60;
 export const dynamicParams = true;
@@ -115,6 +116,9 @@ export default async function ProductDetailPage({
 
   const basePrice = Number(product.basePrice);
 
+  // Trạng thái wishlist - null nếu chưa login (WishlistButton sẽ default false)
+  const initialIsInWishlist = await isInWishlist(product.id);
+
   return (
     <>
       {/* Breadcrumb */}
@@ -139,7 +143,9 @@ export default async function ProductDetailPage({
           <div className="grid gap-10 lg:grid-cols-2 lg:gap-12">
             <ProductGallery images={product.images} name={product.name} />
             <ProductInfo
+              initialIsInWishlist={initialIsInWishlist}
               product={{
+                id: product.id,
                 slug: product.slug,
                 name: product.name,
                 brand: product.brand,
