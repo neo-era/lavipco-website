@@ -4,7 +4,9 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { SITE_CONFIG } from "@/lib/constants";
 import { PROJECT_CATEGORY_META } from "@/lib/projects-data";
+import { buildBreadcrumbSchema, stripHtmlForMeta } from "@/lib/seo";
 import { Container } from "@/components/layout/Container";
+import { JsonLd } from "@/components/common/JsonLd";
 import { ProjectDetailHero } from "@/components/projects/ProjectDetailHero";
 import { ProjectInfoCard } from "@/components/projects/ProjectInfoCard";
 import { ProjectGallery } from "@/components/projects/ProjectGallery";
@@ -39,11 +41,12 @@ export async function generateMetadata({
     return { title: "Không tìm thấy dự án", robots: { index: false } };
   }
 
-  const description = (
+  const description = stripHtmlForMeta(
     project.summary ||
-    project.description ||
-    `Dự án ${project.title} - ${PROJECT_CATEGORY_META[project.category].label}`
-  ).slice(0, 160);
+      project.description ||
+      `Dự án ${project.title} - ${PROJECT_CATEGORY_META[project.category].label}`,
+    160,
+  );
 
   return {
     title: project.title,
@@ -60,6 +63,12 @@ export async function generateMetadata({
         ? [{ url: project.images[0], width: 1200, height: 630, alt: project.title }]
         : undefined,
     },
+    twitter: {
+      card: "summary_large_image",
+      title: project.title,
+      description,
+      images: project.images[0] ? [project.images[0]] : undefined,
+    },
   };
 }
 
@@ -75,8 +84,16 @@ export default async function ProjectDetailPage({
 
   const meta = PROJECT_CATEGORY_META[project.category];
 
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: "Trang chủ", url: "/" },
+    { name: "Dự án", url: "/projects" },
+    { name: project.title },
+  ]);
+
   return (
     <>
+      <JsonLd data={breadcrumbSchema} />
+
       <ProjectDetailHero
         title={project.title}
         summary={project.summary}

@@ -3,8 +3,14 @@ import { notFound } from "next/navigation";
 
 import { db } from "@/lib/db";
 import { SITE_CONFIG } from "@/lib/constants";
+import {
+  buildProductSchema,
+  buildBreadcrumbSchema,
+  stripHtmlForMeta,
+} from "@/lib/seo";
 import { Container } from "@/components/layout/Container";
 import { Breadcrumb } from "@/components/common/Breadcrumb";
+import { JsonLd } from "@/components/common/JsonLd";
 import { ProductGallery } from "@/components/product/ProductGallery";
 import {
   ProductInfo,
@@ -58,12 +64,13 @@ export async function generateMetadata({
   }
 
   const title = product.metaTitle || product.name;
-  const description = (
+  const description = stripHtmlForMeta(
     product.metaDescription ||
-    product.shortDescription ||
-    product.description ||
-    `${product.name} - LAVIPCO`
-  ).slice(0, 160);
+      product.shortDescription ||
+      product.description ||
+      `${product.name} - LAVIPCO`,
+    160,
+  );
 
   return {
     title,
@@ -79,6 +86,12 @@ export async function generateMetadata({
       images: product.images[0]
         ? [{ url: product.images[0], width: 1200, height: 630, alt: product.name }]
         : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: product.name,
+      description,
+      images: product.images[0] ? [product.images[0]] : undefined,
     },
   };
 }
@@ -119,8 +132,36 @@ export default async function ProductDetailPage({
   // Trạng thái wishlist - null nếu chưa login (WishlistButton sẽ default false)
   const initialIsInWishlist = await isInWishlist(product.id);
 
+  // Build JSON-LD schemas
+  const defaultVariant =
+    variants.find((v) => v.isDefault) ?? variants[0];
+  const totalStock = variants.reduce((s, v) => s + v.stock, 0);
+  const productSchema = buildProductSchema({
+    name: product.name,
+    description:
+      product.shortDescription || stripHtmlForMeta(product.description, 500),
+    slug: product.slug,
+    images: product.images,
+    brand: product.brand,
+    sku: defaultVariant?.sku,
+    basePrice,
+    priceOnRequest: product.priceOnRequest,
+    totalStock,
+  });
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: "Trang chủ", url: "/" },
+    { name: "Sản phẩm", url: "/products" },
+    {
+      name: product.category.name,
+      url: `/products?category=${product.category.slug}`,
+    },
+    { name: product.name },
+  ]);
+
   return (
     <>
+      <JsonLd data={[productSchema, breadcrumbSchema]} />
+
       {/* Breadcrumb */}
       <section className="border-b bg-muted/20">
         <Container className="py-4">

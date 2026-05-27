@@ -26,21 +26,6 @@ import { ViewToggle } from "@/components/product/ViewToggle";
 export const revalidate = 60;
 export const dynamic = "force-dynamic";
 
-export const metadata: Metadata = {
-  title: "Sản phẩm",
-  description:
-    "Catalog thiết bị chiếu sáng và điều khiển: đèn LED đường phố, đèn tín hiệu giao thông, đèn pha cảnh quan, tủ điều khiển và phụ kiện.",
-  alternates: { canonical: "/products" },
-  openGraph: {
-    title: `Sản phẩm | ${SITE_CONFIG.name}`,
-    description: SITE_CONFIG.description,
-    url: "/products",
-    type: "website",
-    siteName: SITE_CONFIG.name,
-    locale: "vi_VN",
-  },
-};
-
 type SearchParams = {
   category?: string;
   brand?: string;
@@ -51,6 +36,40 @@ type SearchParams = {
   view?: string;
   page?: string;
 };
+
+/**
+ * Canonical strategy:
+ *  - Trang gốc /products: canonical /products.
+ *  - Paginated (page=2): canonical /products?page=2 (mỗi trang là duy nhất với Google).
+ *  - Filter (category/brand/q): canonical /products → tránh duplicate content khi
+ *    crawler hit nhiều URL filter khác nhau với cùng content.
+ */
+export async function generateMetadata({
+  searchParams,
+}: {
+  searchParams: Promise<SearchParams>;
+}): Promise<Metadata> {
+  const sp = await searchParams;
+  const page = Math.max(1, Number(sp.page) || 1);
+
+  const titleSuffix = page > 1 ? ` - Trang ${page}` : "";
+  const canonical = page > 1 ? `/products?page=${page}` : "/products";
+
+  return {
+    title: `Sản phẩm${titleSuffix}`,
+    description:
+      "Catalog thiết bị chiếu sáng và điều khiển: đèn LED đường phố, đèn tín hiệu giao thông, đèn pha cảnh quan, tủ điều khiển và phụ kiện.",
+    alternates: { canonical },
+    openGraph: {
+      title: `Sản phẩm${titleSuffix} | ${SITE_CONFIG.name}`,
+      description: SITE_CONFIG.description,
+      url: canonical,
+      type: "website",
+      siteName: SITE_CONFIG.name,
+      locale: "vi_VN",
+    },
+  };
+}
 
 export default async function ProductsPage({
   searchParams,

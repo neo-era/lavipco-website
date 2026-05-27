@@ -3,8 +3,14 @@ import { Inter } from "next/font/google";
 
 import "./globals.css";
 import { SITE_CONFIG } from "@/lib/constants";
+import {
+  buildOrganizationSchema,
+  buildWebSiteSchema,
+} from "@/lib/seo";
 import { Toaster } from "@/components/ui/toaster";
 import { Providers } from "@/components/providers";
+import { JsonLd } from "@/components/common/JsonLd";
+import { GoogleAnalytics } from "@/components/common/GoogleAnalytics";
 
 const inter = Inter({
   subsets: ["latin", "vietnamese"],
@@ -68,6 +74,10 @@ export default function RootLayout({
       <body className={`${inter.variable} font-sans antialiased`}>
         <Providers>{children}</Providers>
         <Toaster />
+        {/* Schema.org Organization + WebSite — áp dụng cho mọi trang */}
+        <JsonLd data={[buildOrganizationSchema(), buildWebSiteSchema()]} />
+        {/* GA4/GTM defensive load (chỉ khi env có) */}
+        <GoogleAnalytics />
       </body>
     </html>
   );

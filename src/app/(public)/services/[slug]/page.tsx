@@ -4,7 +4,13 @@ import { notFound } from "next/navigation";
 import { db } from "@/lib/db";
 import { SITE_CONFIG } from "@/lib/constants";
 import { getServiceExtras } from "@/lib/services-data";
+import {
+  buildServiceSchema,
+  buildBreadcrumbSchema,
+  stripHtmlForMeta,
+} from "@/lib/seo";
 import { Container } from "@/components/layout/Container";
+import { JsonLd } from "@/components/common/JsonLd";
 import { ServiceDetailHero } from "@/components/services/ServiceDetailHero";
 import { ServiceProcess } from "@/components/services/ServiceProcess";
 import { ServiceBenefits } from "@/components/services/ServiceBenefits";
@@ -42,13 +48,15 @@ export async function generateMetadata({
     return { title: "Không tìm thấy dịch vụ", robots: { index: false } };
   }
 
+  const description = stripHtmlForMeta(service.description, 160);
+
   return {
     title: service.title,
-    description: service.description.slice(0, 160),
+    description,
     alternates: { canonical: `/services/${slug}` },
     openGraph: {
       title: `${service.title} | ${SITE_CONFIG.name}`,
-      description: service.description,
+      description,
       url: `/services/${slug}`,
       type: "article",
       siteName: SITE_CONFIG.name,
@@ -56,6 +64,12 @@ export async function generateMetadata({
       images: service.coverImage
         ? [{ url: service.coverImage, width: 1200, height: 630, alt: service.title }]
         : undefined,
+    },
+    twitter: {
+      card: "summary_large_image",
+      title: service.title,
+      description,
+      images: service.coverImage ? [service.coverImage] : undefined,
     },
   };
 }
@@ -77,8 +91,22 @@ export default async function ServiceDetailPage({
 
   const extras = getServiceExtras(slug);
 
+  const serviceSchema = buildServiceSchema({
+    title: service.title,
+    description: stripHtmlForMeta(service.description, 5000),
+    slug: service.slug,
+    coverImage: service.coverImage,
+  });
+  const breadcrumbSchema = buildBreadcrumbSchema([
+    { name: "Trang chủ", url: "/" },
+    { name: "Dịch vụ", url: "/services" },
+    { name: service.title },
+  ]);
+
   return (
     <>
+      <JsonLd data={[serviceSchema, breadcrumbSchema]} />
+
       <ServiceDetailHero
         title={service.title}
         description={service.description}
