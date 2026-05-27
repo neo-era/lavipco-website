@@ -11,4 +11,6 @@ export * from "./shared";
 export * from "./auth";
 export * from "./quote";
 export * from "./contact";
+export * from "./checkout";
+export * from "./coupon";
 // export * from "./product";
