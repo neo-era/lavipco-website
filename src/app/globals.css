@@ -103,3 +103,34 @@
     @apply mx-auto w-full max-w-5xl px-4 sm:px-6 lg:px-8;
   }
 }
+
+/**
+ * Print styles cho /account/orders/[code] - "In hoá đơn".
+ * Ẩn header/footer/sidebar/breadcrumb + reset background trắng.
+ */
+@media print {
+  header,
+  footer,
+  nav[aria-label="Breadcrumb"],
+  .print\:hidden {
+    display: none !important;
+  }
+  body {
+    background: white !important;
+    color: black !important;
+  }
+  @page {
+    margin: 1.5cm;
+  }
+  /* Bỏ shadow, border tròn để giấy in sạch */
+  .rounded-xl,
+  .rounded-lg,
+  .rounded-md {
+    border-radius: 4px !important;
+  }
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg {
+    box-shadow: none !important;
+  }
+}
