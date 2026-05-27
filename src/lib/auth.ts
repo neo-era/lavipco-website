@@ -42,9 +42,13 @@ export const { auth, handlers, signIn, signOut } = NextAuth({
             image: true,
             role: true,
             hashedPassword: true,
+            isLocked: true,
           },
         });
         if (!user || !user.hashedPassword) return null;
+
+        // Admin có thể tạm khoá user — chặn đăng nhập ở đây
+        if (user.isLocked) return null;
 
         const match = await bcrypt.compare(password, user.hashedPassword);
         if (!match) return null;
