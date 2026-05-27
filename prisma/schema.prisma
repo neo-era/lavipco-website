@@ -325,25 +325,69 @@ model Order {
   // Địa chỉ giao hàng — snapshot vào lúc đặt
   shippingAddressId String?
   shippingSnapshot  Json?
-  note              String?
+  note              String? // ghi chú của khách (hiển thị cho cả khách + admin)
+  // Note nội bộ chỉ admin/staff thấy
+  internalNote      String?        @db.Text
   paymentMethod     PaymentMethod
   paymentStatus     PaymentStatus  @default(PENDING)
   shippingStatus    ShippingStatus @default(PENDING)
   orderStatus       OrderStatus    @default(PENDING)
   couponCode        String?
 
+  // Cancel + refund tracking
+  cancelReason String? @db.Text
+  cancelledAt  DateTime?
+  refundedAt   DateTime?
+  refundAmount Decimal? @db.Decimal(14, 2)
+
+  // Shipping tracking — promote khỏi shippingSnapshot JSON cho index/search
+  shippingProvider String? // "GHN" | "GHTK" | tên khác
+  trackingCode     String? // mã vận đơn từ provider
+
+  // Payment gateway transaction ID (VNPay txnRef, MoMo, etc.)
+  paymentTransactionId String?
+
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  user            User?       @relation(fields: [userId], references: [id], onDelete: SetNull)
-  shippingAddress Address?    @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
+  user            User?           @relation(fields: [userId], references: [id], onDelete: SetNull)
+  shippingAddress Address?        @relation(fields: [shippingAddressId], references: [id], onDelete: SetNull)
   items           OrderItem[]
+  activities      OrderActivity[]
 
   @@index([userId])
   @@index([orderStatus])
   @@index([paymentStatus])
+  @@index([shippingStatus])
   @@index([createdAt])
+  @@index([trackingCode])
   @@map("orders")
+}
+
+// ======================================================
+// ORDER ACTIVITY — audit trail cho admin thao tác trên đơn
+// ======================================================
+
+model OrderActivity {
+  id        String   @id @default(cuid())
+  orderId   String
+  // User thực hiện (admin/staff). Null = system (vd auto từ webhook VNPay).
+  byUserId  String?
+  // Loại hành động: STATUS_CHANGE | PAYMENT_UPDATE | SHIPPING_UPDATE |
+  // NOTE_ADDED | CANCELLED | REFUNDED | CREATED
+  action    String
+  // Giá trị trước/sau (JSON string nếu phức tạp, plain text nếu đơn giản)
+  fromValue String?
+  toValue   String?
+  // Ghi chú admin nhập kèm hành động (vd lý do huỷ)
+  note      String?  @db.Text
+
+  createdAt DateTime @default(now())
+
+  order Order @relation(fields: [orderId], references: [id], onDelete: Cascade)
+
+  @@index([orderId, createdAt])
+  @@map("order_activities")
 }
 
 model OrderItem {

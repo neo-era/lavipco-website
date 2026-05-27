@@ -236,3 +236,154 @@ export function getResponseMessage(code: string | null): string {
   if (!code) return "Không nhận được phản hồi từ cổng thanh toán";
   return VNPAY_RESPONSE_MESSAGES[code] ?? `Mã lỗi ${code} - liên hệ hỗ trợ để được giúp`;
 }
+
+// ====================================================================
+// Refund API (Merchant API v2 - sandbox)
+// ====================================================================
+
+const VNPAY_API_URL =
+  "https://sandbox.vnpayment.vn/merchant_webapi/api/transaction";
+// Production: "https://merchant.vnpay.vn/merchant_webapi/api/transaction"
+
+export type VnpayRefundInput = {
+  /** Mã đơn (vnp_TxnRef gốc khi tạo payment). */
+  orderId: string;
+  /** Số tiền hoàn (VND nguyên). VNPay sẽ × 100. */
+  amount: number;
+  /** Mô tả ngắn lý do hoàn. */
+  orderInfo: string;
+  /** Loại refund: "02" = full, "03" = partial. */
+  transactionType: "02" | "03";
+  /** Username admin thực hiện - log audit phía VNPay. */
+  createBy: string;
+  /** Thời gian thanh toán gốc (vnp_PayDate từ response cũ, format yyyyMMddHHmmss).
+   *  Bắt buộc với refund API. */
+  transactionDate: string;
+  /** Transaction No từ VNPay khi thanh toán gốc (vnp_TransactionNo). */
+  transactionNo?: string;
+  /** IP server gọi API. */
+  ipAddr: string;
+};
+
+export type VnpayRefundResult = {
+  ok: boolean;
+  responseCode: string | null;
+  message: string;
+  /** Mã giao dịch refund từ VNPay nếu thành công. */
+  refundTransactionNo: string | null;
+  /** Raw response để debug. */
+  raw: Record<string, unknown>;
+};
+
+/**
+ * Gọi VNPay refund API.
+ *
+ * Tài liệu: https://sandbox.vnpayment.vn/apis/docs/hoan-tien/refund.html
+ *
+ * Flow:
+ *   1. Sinh vnp_RequestId (UUID-like) + vnp_CreateDate
+ *   2. Build payload với required fields
+ *   3. Sign: HMAC-SHA512 của chuỗi `vnp_RequestId|vnp_Version|vnp_Command|...`
+ *      (theo thứ tự đặc thù của refund, KHÔNG sort alphabet)
+ *   4. POST JSON tới VNPAY_API_URL
+ *   5. Verify response signature
+ *
+ * LƯU Ý: refund sandbox đôi khi từ chối vì transaction đã quá hạn. Test với
+ * giao dịch mới trong vòng 24h.
+ */
+export async function refundVnpayTransaction(
+  input: VnpayRefundInput,
+): Promise<VnpayRefundResult> {
+  const cfg = getConfig();
+  const now = new Date();
+
+  const requestId = `${formatVnpayDate(now)}${Math.floor(Math.random() * 1_000_000)
+    .toString()
+    .padStart(6, "0")}`;
+  const createDate = formatVnpayDate(now);
+  const amountStr = String(Math.round(input.amount * 100));
+
+  // Theo doc VNPay: dữ liệu sign nối bằng '|' theo thứ tự cố định
+  // vnp_RequestId|vnp_Version|vnp_Command|vnp_TmnCode|vnp_TransactionType|
+  // vnp_TxnRef|vnp_Amount|vnp_TransactionNo|vnp_TransactionDate|
+  // vnp_CreateBy|vnp_CreateDate|vnp_IpAddr|vnp_OrderInfo
+  const dataToSign = [
+    requestId,
+    VNPAY_VERSION,
+    "refund",
+    cfg.tmnCode,
+    input.transactionType,
+    input.orderId,
+    amountStr,
+    input.transactionNo ?? "",
+    input.transactionDate,
+    input.createBy,
+    createDate,
+    input.ipAddr,
+    input.orderInfo,
+  ].join("|");
+
+  const signature = hmacSha512(dataToSign, cfg.secretKey);
+
+  const payload = {
+    vnp_RequestId: requestId,
+    vnp_Version: VNPAY_VERSION,
+    vnp_Command: "refund",
+    vnp_TmnCode: cfg.tmnCode,
+    vnp_TransactionType: input.transactionType,
+    vnp_TxnRef: input.orderId,
+    vnp_Amount: amountStr,
+    vnp_TransactionNo: input.transactionNo ?? "",
+    vnp_TransactionDate: input.transactionDate,
+    vnp_CreateBy: input.createBy,
+    vnp_CreateDate: createDate,
+    vnp_IpAddr: input.ipAddr,
+    vnp_OrderInfo: input.orderInfo,
+    vnp_SecureHash: signature,
+  };
+
+  try {
+    const res = await fetch(VNPAY_API_URL, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+      signal: AbortSignal.timeout(30_000),
+    });
+
+    if (!res.ok) {
+      return {
+        ok: false,
+        responseCode: null,
+        message: `VNPay API HTTP ${res.status}`,
+        refundTransactionNo: null,
+        raw: { status: res.status },
+      };
+    }
+
+    const data = (await res.json()) as Record<string, unknown>;
+    const responseCode = typeof data.vnp_ResponseCode === "string" ? data.vnp_ResponseCode : null;
+    const message =
+      typeof data.vnp_Message === "string"
+        ? data.vnp_Message
+        : getResponseMessage(responseCode);
+    const refundTransactionNo =
+      typeof data.vnp_TransactionNo === "string" ? data.vnp_TransactionNo : null;
+
+    return {
+      ok: responseCode === SUCCESS_CODE,
+      responseCode,
+      message,
+      refundTransactionNo,
+      raw: data,
+    };
+  } catch (error) {
+    console.error("[vnpay refund] exception", error);
+    return {
+      ok: false,
+      responseCode: null,
+      message: error instanceof Error ? error.message : "Lỗi không xác định",
+      refundTransactionNo: null,
+      raw: {},
+    };
+  }
+}
