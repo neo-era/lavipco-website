@@ -18,8 +18,18 @@ import bcrypt from "bcryptjs";
 
 import { db } from "@/lib/db";
 import { signUpSchema } from "@/lib/validations/auth";
+import { authLimiter, checkRateLimit } from "@/lib/rate-limit";
 
 export async function POST(request: Request) {
+  // Rate limit theo IP (cùng quota auth: 5/15min)
+  const rl = await checkRateLimit(authLimiter, "register-api");
+  if (!rl.ok) {
+    return NextResponse.json(
+      { error: rl.message },
+      { status: 429, headers: { "Retry-After": String(Math.ceil((rl.reset - Date.now()) / 1000)) } },
+    );
+  }
+
   let body: unknown;
   try {
     body = await request.json();

@@ -14,6 +14,7 @@
  */
 import { db } from "@/lib/db";
 import { removeVietnameseAccents } from "@/lib/utils";
+import { searchLimiter, checkRateLimit } from "@/lib/rate-limit";
 
 export type SearchProductResult = {
   id: string;
@@ -34,6 +35,14 @@ export async function searchProducts(
 ): Promise<SearchProductResult[]> {
   const q = query.trim();
   if (q.length < 2) return [];
+
+  // Rate limit 30/phút/IP - chống scrape data hoặc autocomplete spam
+  const rl = await checkRateLimit(searchLimiter, "products");
+  if (!rl.ok) {
+    // Trả mảng rỗng thay vì throw - search là best-effort UX, không break trang
+    console.warn("[search] Rate limit exceeded");
+    return [];
+  }
 
   const take = Math.max(1, Math.min(MAX_LIMIT, limit));
   const qNoAccent = removeVietnameseAccents(q);

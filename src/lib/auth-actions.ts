@@ -4,6 +4,11 @@
  * Server Actions cho luồng xác thực.
  * Form ở /sign-in và /sign-up gọi trực tiếp các action này — không cần API route
  * (trừ /api/auth/register dành cho client bên ngoài, ví dụ mobile app).
+ *
+ * Bảo mật:
+ *  - Rate limit 5 lần / 15 phút / IP cho mọi auth attempt (signin/signup).
+ *  - Brute force protect: thêm key theo email để cả attacker không brute IP rotation
+ *    cũng không brute single email với nhiều IP.
  */
 import { AuthError } from "next-auth";
 import bcrypt from "bcryptjs";
@@ -11,6 +16,7 @@ import bcrypt from "bcryptjs";
 import { signIn, signOut } from "./auth";
 import { db } from "./db";
 import { signInSchema, signUpSchema } from "./validations/auth";
+import { authLimiter, checkRateLimit } from "./rate-limit";
 
 export type AuthFormState = {
   ok?: boolean;
@@ -36,6 +42,13 @@ export async function signInAction(
       ok: false,
       fieldErrors: parsed.error.flatten().fieldErrors,
     };
+  }
+
+  // Rate limit theo IP + email (chống brute force cả 2 chiều)
+  const emailKey = parsed.data.email.toLowerCase();
+  const rl = await checkRateLimit(authLimiter, "signin", emailKey);
+  if (!rl.ok) {
+    return { ok: false, error: rl.message };
   }
 
   const callbackUrl = (formData.get("callbackUrl") as string) || "/";
@@ -80,6 +93,12 @@ export async function signUpAction(
     };
   }
   const { name, email, password } = parsed.data;
+
+  // Rate limit signup theo IP (cùng quota auth)
+  const rl = await checkRateLimit(authLimiter, "signup");
+  if (!rl.ok) {
+    return { ok: false, error: rl.message };
+  }
 
   const existing = await db.user.findUnique({ where: { email } });
   if (existing) {

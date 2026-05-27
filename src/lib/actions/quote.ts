@@ -18,6 +18,7 @@ import {
   type QuoteRequestInput,
 } from "@/lib/validations/quote";
 import { SITE_CONFIG } from "@/lib/constants";
+import { contactLimiter, checkRateLimit } from "@/lib/rate-limit";
 
 export type QuoteFormState = {
   ok?: boolean;
@@ -28,6 +29,12 @@ export type QuoteFormState = {
 };
 
 async function processQuote(input: QuoteRequestInput): Promise<QuoteFormState> {
+  // Rate limit 3/giờ/IP (cùng quota contact - cùng dạng abuse)
+  const rl = await checkRateLimit(contactLimiter, "quote");
+  if (!rl.ok) {
+    return { ok: false, error: rl.message };
+  }
+
   const { name, email, phone, message, serviceSlug, productSlug } = input;
 
   // Build subject từ slug

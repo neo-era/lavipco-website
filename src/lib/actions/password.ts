@@ -8,6 +8,7 @@ import {
   changePasswordSchema,
   type ChangePasswordInput,
 } from "@/lib/validations/password";
+import { authLimiter, checkRateLimit } from "@/lib/rate-limit";
 
 export type ChangePasswordResult =
   | { ok: true }
@@ -45,6 +46,12 @@ export async function changePassword(
   const session = await auth();
   if (!session?.user?.id) {
     return { ok: false, error: "Bạn cần đăng nhập để đổi mật khẩu" };
+  }
+
+  // Rate limit theo user.id để chống brute force currentPassword
+  const rl = await checkRateLimit(authLimiter, "change-password", session.user.id);
+  if (!rl.ok) {
+    return { ok: false, error: rl.message };
   }
 
   const user = await db.user.findUnique({
