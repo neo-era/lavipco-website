@@ -311,7 +311,8 @@
   <h3>💡 Khác</h3>
   <ul>
     <li><a href="#tips">14. Mẹo và lưu ý</a></li>
-    <li><a href="#faq">15. FAQ</a></li>
+    <li><a href="#import">15. Nhập dữ liệu từ Excel</a></li>
+    <li><a href="#faq">16. FAQ</a></li>
   </ul>
 </aside>
 
@@ -1013,8 +1014,48 @@
   <li>Slug đã publish → hạn chế đổi (sẽ break các link đã share + SEO Google đã index)</li>
 </ul>
 
-<!-- ==================== 15. FAQ ==================== -->
-<h2 id="faq">15. FAQ</h2>
+<!-- ==================== 15. NHẬP TỪ EXCEL ==================== -->
+<h2 id="import">15. Nhập dữ liệu từ Excel</h2>
+
+<p>Cho phép <strong>nhập hàng loạt + cập nhật</strong> Sản phẩm, Dự án, Dịch vụ, Tin tức bằng file Excel (.xlsx). Mỗi trang danh sách có nút <strong>"Nhập từ Excel"</strong> cạnh nút Thêm mới.</p>
+
+<h3>15.1. Các bước</h3>
+<ol class="steps">
+  <li>Vào trang danh sách (vd <code>/admin/products</code>) → bấm <strong>"Nhập từ Excel"</strong>.</li>
+  <li>Bấm <strong>"Tải file mẫu"</strong> — file có sẵn cột chuẩn, vài dòng ví dụ và sheet <strong>"Hướng dẫn"</strong>.</li>
+  <li>Điền dữ liệu vào sheet (xoá các dòng ví dụ), lưu file.</li>
+  <li>Bấm <strong>chọn file .xlsx</strong> để tải lên → xem <strong>preview</strong>: dòng tạo mới / cập nhật / lỗi (kèm lý do).</li>
+  <li>Bấm <strong>"Xác nhận import"</strong> → hệ thống ghi dữ liệu, báo tóm tắt.</li>
+</ol>
+
+<h3>15.2. Quy ước quan trọng</h3>
+<table>
+  <thead><tr><th>Vấn đề</th><th>Quy ước</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Tạo mới vs Cập nhật</strong></td><td>Dựa trên <strong>Slug</strong>: slug đã tồn tại → CẬP NHẬT; chưa có → TẠO MỚI.</td></tr>
+    <tr><td><strong>Ảnh</strong></td><td>Dán <strong>URL ảnh</strong> (Cloudinary/link), KHÔNG nhúng file ảnh vào Excel.</td></tr>
+    <tr><td><strong>Nhiều ảnh / tags</strong></td><td>Mỗi phần tử 1 dòng trong ô, hoặc ngăn cách bằng <code>|</code>.</td></tr>
+    <tr><td><strong>Có/Không</strong></td><td><code>có</code>/<code>không</code>, <code>1</code>/<code>0</code>, <code>x</code>.</td></tr>
+    <tr><td><strong>Ngày</strong></td><td><code>yyyy-mm-dd</code> hoặc <code>dd/MM/yyyy</code>.</td></tr>
+    <tr><td><strong>Sản phẩm → Danh mục</strong></td><td>Điền <strong>Slug danh mục</strong> (xem sheet "Danh mục" trong file mẫu). Sai slug → dòng báo lỗi.</td></tr>
+    <tr><td><strong>Thông số sản phẩm</strong></td><td>Mỗi dòng <code>tên=giá trị (đơn vị)</code>, vd <code>Công suất=100 (W)</code>.</td></tr>
+    <tr><td><strong>Bước dịch vụ</strong></td><td>Mỗi dòng <code>Tiêu đề :: Mô tả</code>.</td></tr>
+    <tr><td><strong>Loại dự án</strong></td><td>Nhập nhãn tiếng Việt (vd "Chiếu sáng đô thị") hoặc mã enum.</td></tr>
+  </tbody>
+</table>
+
+<div class="alert warn">
+  <strong>⚠️ Lưu ý</strong>
+  Sản phẩm import ở bản này là <strong>sản phẩm không biến thể</strong> (1 mức giá/tồn kho). Sản phẩm nhiều biến thể vẫn tạo/sửa qua form. Mỗi lần import tối đa <strong>1000 dòng</strong>.
+</div>
+
+<div class="alert success">
+  <strong>✓ An toàn</strong>
+  Dòng lỗi được bỏ qua + báo lý do, KHÔNG làm hỏng các dòng hợp lệ khác. Luôn xem preview trước khi xác nhận.
+</div>
+
+<!-- ==================== 16. FAQ ==================== -->
+<h2 id="faq">16. FAQ</h2>
 
 <h3>❓ Quên mật khẩu admin?</h3>
 <p>Liên hệ kỹ thuật reset qua Supabase Dashboard hoặc chạy script seed lại password.</p>

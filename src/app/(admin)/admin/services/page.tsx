@@ -19,6 +19,8 @@ import {
 } from "@/components/ui/table";
 import { Pagination } from "@/components/common/Pagination";
 import { DeleteServiceAction } from "@/components/admin/DeleteServiceAction";
+import { ImportDialog } from "@/components/admin/shared/ImportDialog";
+import { previewImportService, runImportService } from "@/lib/actions/admin-service-import";
 
 export const metadata: Metadata = { title: "Dịch vụ" };
 
@@ -72,11 +74,19 @@ export default async function AdminServicesPage({
             CRUD dịch vụ kỹ thuật + quy trình thực hiện.
           </p>
         </div>
-        <Button asChild variant="brand">
-          <Link href="/admin/services/new">
-            <Plus className="h-4 w-4" /> Thêm dịch vụ
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <ImportDialog
+            entityLabel="Dịch vụ"
+            templateHref="/api/admin/templates/services"
+            onParse={previewImportService}
+            onConfirm={runImportService}
+          />
+          <Button asChild variant="brand">
+            <Link href="/admin/services/new">
+              <Plus className="h-4 w-4" /> Thêm dịch vụ
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <form action="/admin/services" method="get" className="flex gap-2">

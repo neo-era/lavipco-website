@@ -1393,6 +1393,108 @@ Mặc định: badge "Về LAVIPCO"; heading "Đối tác kỹ thuật trong lĩ
 
 ---
 
+# GIAI ĐOẠN 9 — IMPORT/CẬP NHẬT TỪ EXCEL (Sản phẩm · Dự án · Dịch vụ · Tin tức)
+
+> Mục tiêu: cho admin **nhập hàng loạt + cập nhật** Sản phẩm, Dự án, Dịch vụ, Tin tức
+> bằng file Excel (.xlsx), và **tải file Excel mẫu** ngay trong Admin Panel.
+>
+> **Quyết định kiến trúc (áp dụng xuyên suốt):**
+> - **Thư viện:** `exceljs` (npm, MIT, maintain tốt) cho cả ĐỌC file upload và SINH file mẫu
+>   có style + dropdown. KHÔNG dùng `xlsx`/SheetJS bản npm (lịch sử CVE). Cài 1 lần ở 9.1
+>   — thông báo + chờ Lam duyệt theo CLAUDE.md.
+> - **Tạo mới vs Cập nhật:** dùng **`slug` làm khoá upsert**. Slug đã tồn tại → UPDATE; chưa có → CREATE.
+>   (Tin tức/Dự án/Dịch vụ/Sản phẩm đều có `slug @unique`.)
+> - **Ảnh:** Excel chỉ chứa **URL ảnh** (Cloudinary/link ngoài), KHÔNG upload file ảnh qua Excel.
+>   Ghi rõ điều này trong file mẫu + UI.
+> - **Quy ước mã hoá ô** (thống nhất, ghi vào sheet "Hướng dẫn" của file mẫu):
+>   - Mảng chuỗi (images, tags): mỗi phần tử 1 dòng trong ô, hoặc ngăn cách bằng `|`.
+>   - Boolean: chấp nhận `1/0`, `true/false`, `có/không`, `x`/trống.
+>   - Enum danh mục dự án: nhập nhãn tiếng Việt HOẶC mã enum (map qua `PROJECT_CATEGORY_LABELS`).
+>   - Ngày (publishedAt): ISO `yyyy-mm-dd` hoặc `dd/MM/yyyy`.
+>   - Specs sản phẩm: mỗi dòng `tên=giá trị (đơn vị)`, ví dụ `Công suất=100 (W)`.
+>   - processSteps dịch vụ: mỗi dòng `Tiêu đề :: Mô tả`.
+>   - Sản phẩm → danh mục: cột **"Slug danh mục"** → tra cứu `Category.slug`; không thấy → lỗi dòng.
+> - **Validate + preview:** parse từng dòng → validate Zod (tái dùng schema admin có sẵn) →
+>   **preview** (dòng hợp lệ vs dòng lỗi kèm lý do) → admin xác nhận → upsert → tóm tắt
+>   (N tạo mới, M cập nhật, K lỗi). KHÔNG để 1 dòng lỗi làm hỏng cả file.
+> - **Bảo mật:** mọi action require ADMIN, giới hạn dung lượng file (vd ≤ 5MB), parse server-side,
+>   rate limit, revalidate path liên quan sau import.
+>
+> Thứ tự: 9.1 (nền tảng + UI) → 9.2 (Tin tức + Dịch vụ) → 9.3 (Dự án) → 9.4 (Sản phẩm) → 9.5 (hoàn thiện).
+> Type-check + lint sạch sau mỗi prompt.
+
+---
+
+## Prompt 9.1 — Nền tảng import Excel + UI dùng chung
+
+Xây "động cơ" import tái dùng cho cả 4 entity (chưa wire entity cụ thể).
+
+**Cài dependency:** `exceljs` (thông báo lý do + lệnh `npm install exceljs`, chờ duyệt).
+
+**Tạo:**
+- `src/lib/excel/types.ts` — kiểu dùng chung:
+  - `ColumnSpec` ( `{ header: string; field: string; required?: boolean; example?: string; note?: string }` )
+  - `EntityImportConfig<T>` ( `{ sheetName; columns: ColumnSpec[]; parseRow(raw): unknown; }` — parseRow chuyển 1 dòng Excel thô → object để validate )
+  - `RowResult` ( `{ rowIndex; action: "create"|"update"|"error"; slug?; messages?: string[] }` )
+  - `ImportResult` ( `{ created; updated; errors; rows: RowResult[] }` )
+- `src/lib/excel/parse.ts` — `readWorkbook(buffer)` + `sheetToRows(ws, columns)` map header→field (đọc bằng exceljs). Helper decode: `splitList(cell)`, `parseBool(cell)`, `parseDate(cell)`.
+- `src/lib/excel/template.ts` — `buildTemplate(config, { extraSheets? })` trả Buffer .xlsx: sheet dữ liệu (header in đậm + freeze row + 2-3 dòng ví dụ), sheet "Hướng dẫn" (giải thích từng cột + quy ước mã hoá). Style cơ bản (màu brand #0B5FA5 cho header).
+- `src/components/admin/shared/ImportDialog.tsx` — client component dùng chung:
+  - Props: `entityLabel`, `templateHref`, `onParse(file): Promise<ImportResult preview>` (gọi action validate-only), `onConfirm(file): Promise<ImportResult>` (gọi action import thật).
+  - UI: nút "Tải file mẫu" (link `templateHref`) + dropzone upload → bảng preview (badge xanh create / vàng update / đỏ error + lý do) → nút "Xác nhận import" → toast tóm tắt.
+- `src/app/api/admin/templates/[entity]/route.ts` — GET route (require ADMIN) trả file mẫu .xlsx theo `entity` (products/projects/services/blog). Dùng `buildTemplate`. Sản phẩm: nhúng sheet phụ liệt kê slug danh mục hiện có.
+
+**Ràng buộc:** generic, chưa gắn entity; type-check + lint sạch.
+
+---
+
+## Prompt 9.2 — Import Tin tức + Dịch vụ (entity phẳng)
+
+Áp động cơ 9.1 cho 2 entity dễ nhất.
+
+**Tin tức (`blog`):** cột Excel → field: Tiêu đề→title, Slug→slug, Tóm tắt→excerpt, Nội dung→content, Ảnh bìa (URL)→coverImage, Tags→tags (mảng), Ngày đăng→publishedAt, Đã xuất bản→isPublished, Meta title, Meta description. Validate bằng `blogPostInputSchema`.
+
+**Dịch vụ (`service`):** Tiêu đề→title, Slug→slug, Mô tả ngắn→shortDescription, Mô tả→description, Icon→icon, Ảnh bìa (URL)→coverImage, Giá→price, Các bước→processSteps (mỗi dòng `Tiêu đề :: Mô tả`), Thứ tự→sortOrder, Hiển thị→isActive. Validate bằng `serviceInputSchema`.
+
+**Mỗi entity tạo:**
+- `EntityImportConfig` trong `src/lib/excel/configs/<entity>.ts` (columns + parseRow).
+- Server action `src/lib/actions/admin-<entity>-import.ts`: `previewImport<Entity>(fileBuffer)` (validate-only, trả ImportResult) + `runImport<Entity>(fileBuffer)` (upsert theo slug trong `db.$transaction` từng dòng hợp lệ; bỏ qua dòng lỗi; revalidate). require ADMIN.
+- Gắn nút **"Nhập từ Excel"** + `ImportDialog` vào trang list `/admin/blog` và `/admin/services` (templateHref trỏ `/api/admin/templates/blog` | `/services`).
+
+---
+
+## Prompt 9.3 — Import Dự án
+
+Áp động cơ cho `project`. Cột: Tiêu đề→title, Slug→slug, Tóm tắt→summary, Mô tả→description, Chủ đầu tư→client, Địa điểm→location, Năm→year, Quy mô→scale, **Loại dự án→category** (nhập nhãn TV hoặc enum; map qua `PROJECT_CATEGORY_LABELS`), Ảnh (URL, mảng)→images, Video URL→videoUrl, Nổi bật→isFeatured, Thứ tự→sortOrder. Validate `projectInputSchema`.
+
+Tạo config + action preview/run + gắn nút vào `/admin/projects`. File mẫu có chú thích danh sách loại dự án hợp lệ.
+
+---
+
+## Prompt 9.4 — Import Sản phẩm (v1: sản phẩm không biến thể)
+
+Áp động cơ cho `product` — **giới hạn v1: sản phẩm KHÔNG biến thể** (`hasVariants=false`). Variants để Phase sau (ghi chú trong file mẫu + UI).
+
+Cột: Tên→name, Slug→slug, Thương hiệu→brand, **Slug danh mục→categoryId** (tra `Category.slug`, không thấy → lỗi dòng), Mô tả ngắn→shortDescription, Mô tả→description, Liên hệ báo giá→priceOnRequest, Giá cơ bản→basePrice, Tồn kho→simpleStock, Ảnh (URL, mảng)→images, **Thông số→specs** (mỗi dòng `tên=giá trị (đơn vị)`), Meta title, Meta description, Trạng thái→status (DRAFT/ACTIVE/ARCHIVED), Nổi bật→isFeatured, Catalogue URL→catalogueUrl.
+
+Validate bằng `productInputSchema` với `hasVariants=false, variants=[]`. Action preview/run + gắn nút vào `/admin/products`. File mẫu: sheet phụ liệt kê slug + tên danh mục hiện có để admin tra.
+
+**Ràng buộc:** nếu file có cột variant → cảnh báo "chưa hỗ trợ ở v1, bỏ qua". Ảnh = URL.
+
+---
+
+## Prompt 9.5 — Hoàn thiện import Excel
+
+- **Cập nhật `public/huongdan.html`:** thêm mục "Nhập dữ liệu từ Excel" (cách tải mẫu, quy ước mã hoá ô, ảnh = URL, upsert theo slug, đọc preview/lỗi).
+- **Đồng bộ UX:** nút "Nhập từ Excel" đặt cạnh nút "Thêm mới" ở cả 4 trang list, cùng style.
+- **(Optional) Export:** nút "Xuất Excel" cho từng entity (tái dùng `buildTemplate` + đổ dữ liệu hiện có) để admin sửa rồi import lại.
+- **Edge cases cần test:** file sai định dạng/không phải .xlsx; thiếu cột bắt buộc; slug trùng trong cùng file; giá trị enum/boolean/ngày sai; danh mục không tồn tại; file rỗng; >500 dòng (cân nhắc giới hạn + thông báo).
+- **Test checklist:** tải mẫu → điền vài dòng (gồm 1 dòng lỗi cố ý) → upload → preview phân loại đúng → xác nhận → kiểm tra DB tạo/cập nhật đúng, dòng lỗi bị bỏ qua + báo lý do.
+
+**Ràng buộc chung Giai đoạn 9:** require ADMIN mọi action; ảnh chỉ nhận URL; upsert theo slug; validate tái dùng schema admin; không để 1 dòng lỗi làm hỏng cả import; type-check + lint sạch sau mỗi prompt.
+
+---
+
 # MẸO VIẾT PROMPT HIỆU QUẢ
 
 Khi tự viết prompt cho Claude Code (ngoài bộ mẫu này), Lam tham khảo các nguyên tắc sau:

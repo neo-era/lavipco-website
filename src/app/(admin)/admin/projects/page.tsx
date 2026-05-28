@@ -21,6 +21,8 @@ import {
 } from "@/components/ui/table";
 import { Pagination } from "@/components/common/Pagination";
 import { DeleteProjectAction } from "@/components/admin/DeleteProjectAction";
+import { ImportDialog } from "@/components/admin/shared/ImportDialog";
+import { previewImportProject, runImportProject } from "@/lib/actions/admin-project-import";
 
 export const metadata: Metadata = { title: "Dự án" };
 
@@ -75,11 +77,19 @@ export default async function AdminProjectsPage({
             Quản lý portfolio dự án LAVIPCO.
           </p>
         </div>
-        <Button asChild variant="brand">
-          <Link href="/admin/projects/new">
-            <Plus className="h-4 w-4" /> Thêm dự án
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <ImportDialog
+            entityLabel="Dự án"
+            templateHref="/api/admin/templates/projects"
+            onParse={previewImportProject}
+            onConfirm={runImportProject}
+          />
+          <Button asChild variant="brand">
+            <Link href="/admin/projects/new">
+              <Plus className="h-4 w-4" /> Thêm dự án
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <form action="/admin/projects" method="get" className="flex gap-2">

@@ -27,6 +27,8 @@ import {
 } from "@/components/ui/table";
 import { Pagination } from "@/components/common/Pagination";
 import { DeleteBlogPostAction } from "@/components/admin/DeleteBlogPostAction";
+import { ImportDialog } from "@/components/admin/shared/ImportDialog";
+import { previewImportBlog, runImportBlog } from "@/lib/actions/admin-blog-import";
 
 export const metadata: Metadata = { title: "Tin tức" };
 
@@ -87,11 +89,19 @@ export default async function AdminBlogPage({
             CRUD bài viết với rich editor (Tiptap) + tags + lịch publish.
           </p>
         </div>
-        <Button asChild variant="brand">
-          <Link href="/admin/blog/new">
-            <Plus className="h-4 w-4" /> Thêm bài viết
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <ImportDialog
+            entityLabel="Tin tức"
+            templateHref="/api/admin/templates/blog"
+            onParse={previewImportBlog}
+            onConfirm={runImportBlog}
+          />
+          <Button asChild variant="brand">
+            <Link href="/admin/blog/new">
+              <Plus className="h-4 w-4" /> Thêm bài viết
+            </Link>
+          </Button>
+        </div>
       </div>
 
       <form action="/admin/blog" method="get" className="flex flex-wrap gap-2">

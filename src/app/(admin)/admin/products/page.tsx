@@ -13,6 +13,8 @@ import {
   AdminProductTable,
   type AdminProductRow,
 } from "@/components/admin/AdminProductTable";
+import { ImportDialog } from "@/components/admin/shared/ImportDialog";
+import { previewImportProduct, runImportProduct } from "@/lib/actions/admin-product-import";
 
 export const metadata: Metadata = { title: "Sản phẩm" };
 
@@ -117,12 +119,20 @@ export default async function AdminProductsPage({
             Quản lý catalog: danh mục, biến thể, ảnh, thông số và trạng thái hiển thị.
           </p>
         </div>
-        <Button asChild variant="brand">
-          <Link href="/admin/products/new">
-            <Plus className="h-4 w-4" />
-            Thêm sản phẩm
-          </Link>
-        </Button>
+        <div className="flex flex-wrap gap-2">
+          <ImportDialog
+            entityLabel="Sản phẩm"
+            templateHref="/api/admin/templates/products"
+            onParse={previewImportProduct}
+            onConfirm={runImportProduct}
+          />
+          <Button asChild variant="brand">
+            <Link href="/admin/products/new">
+              <Plus className="h-4 w-4" />
+              Thêm sản phẩm
+            </Link>
+          </Button>
+        </div>
       </div>
 
       {/* Filters */}
