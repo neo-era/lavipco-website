@@ -1272,6 +1272,127 @@ Bổ sung tính năng dùng Claude API sinh nội dung trong các form admin (n�
 
 ---
 
+# GIAI ĐOẠN 8 — CMS NỘI DUNG TRANG (TRANG CHỦ + GIỚI THIỆU)
+
+> Mục tiêu: cho admin sửa **text + hình ảnh** của trang chủ và trang giới thiệu
+> ngay trong Admin Panel, không cần sửa code/deploy lại.
+>
+> **Kiến trúc thống nhất (bám pattern Settings hiện có):**
+> - Lưu nội dung mỗi section dưới dạng **JSON trong bảng `Setting`** (1 key = 1 section,
+>   `value` = `JSON.stringify(data)`). KHÔNG tạo model mới. Xác nhận cột `Setting.value`
+>   là `String`→`text` ở Postgres (đủ chứa JSON vài KB); nếu có `@db.VarChar` thì đổi sang `@db.Text`.
+> - **Defensive fallback:** component public đọc DB; nếu key chưa có / JSON hỏng / validate fail
+>   → dùng **nội dung mặc định** (chính là text đang hardcode bây giờ). Trang KHÔNG bao giờ vỡ.
+> - Ảnh dùng `ImageUploader` (mode single) + Cloudinary có sẵn (pattern `processImage` như
+>   `admin-services.ts`): data URL → upload, http(s) URL giữ nguyên, rỗng → null → fallback gradient/icon.
+> - Mọi action `require ADMIN` + `revalidatePath("/")` / `revalidatePath("/about")` sau khi lưu.
+> - Admin UI ở `/admin/content` (tab "Trang chủ" / "Trang giới thiệu"), form lặp dùng `useFieldArray`.
+> - Thêm link "Nội dung trang" vào sidebar admin.
+>
+> Làm tuần tự 8.1 → 8.6. Mỗi prompt là một mảng độc lập, build xong type-check + lint trước khi sang prompt sau.
+
+---
+
+## Prompt 8.1 — Nền tảng CMS nội dung (schema + actions + admin shell)
+
+Xây nền tảng cho CMS nội dung trang, CHƯA wire component public (làm ở các prompt sau).
+
+**Tạo:**
+- `src/lib/content/defaults.ts` — object `CONTENT_DEFAULTS` chứa nội dung mặc định (copy y nguyên text đang hardcode trong các component home/about — xem inventory ở từng prompt 8.2–8.5). Mỗi section 1 key. Export type cho từng section.
+- `src/lib/content/schema.ts` — Zod schema cho từng section (string max hợp lý, array `.max(n)`, url/href optional). Suy type bằng `z.infer`.
+- `src/lib/content/index.ts` — `getContent<K>(key)`: đọc `db.setting.findUnique({where:{key}})`, `JSON.parse`, validate bằng schema; fail bất kỳ bước nào → trả `CONTENT_DEFAULTS[key]`. Thêm helper gộp `getHomeContent()`, `getAboutContent()`.
+- `src/lib/actions/admin-content.ts` — `"use server"`:
+  - `loadContentSection(key)` (đọc để init form, merge default)
+  - `updateContentSection(key, data)`: `requireAdmin` (role ADMIN) → validate theo schema của key → xử lý ảnh trong data (đệ quy field ảnh qua Cloudinary) → `db.setting.upsert({where:{key},create/update:{value: JSON.stringify(data)}})` → `revalidatePath("/")` + `revalidatePath("/about")` + `revalidatePath("/admin/content")`.
+  - Dùng `ActionResult` type giống các action admin khác (ok/error/fieldErrors).
+- `src/app/(admin)/admin/content/page.tsx` — `export const dynamic = "force-dynamic"`; tabs "Trang chủ" / "Trang giới thiệu" (shadcn Tabs); mỗi tab render các form section (tạo dần ở 8.2–8.5). Heading + mô tả ngắn.
+- Thêm mục **"Nội dung trang"** vào sidebar admin (tìm file nav admin, thêm link `/admin/content`, icon `LayoutTemplate` hoặc `FileText`).
+
+**Ràng buộc:** danh sách key chuẩn (dùng xuyên suốt): `home_hero`, `home_about`, `home_services_header`, `home_why`, `home_cta`, `about_hero`, `about_story`, `about_vmv`, `about_timeline`, `about_leadership`, `about_certs`, `about_partners`, `about_cta`. Type-check + lint sạch.
+
+---
+
+## Prompt 8.2 — Hero carousel trang chủ (động + ảnh thật)
+
+Cho admin quản lý các slide của Hero trang chủ, thêm ảnh nền thật (hiện đang gradient + icon placeholder).
+
+**Shape `home_hero`:** mảng slide (1–6 phần tử), mỗi slide:
+`{ image: string, badge: string, heading: string, subHeading: string, ctaLabel: string, ctaHref: string }`.
+
+**Mặc định (3 slide — copy từ `HeroCarousel.tsx` hiện tại):**
+1. badge "Smart City" · heading "Chiếu sáng đô thị thông minh" · sub "Giải pháp điều khiển từ cấp tủ tới điểm sáng, tích hợp camera, IoT và nền tảng điều hành đô thị." · CTA "Khám phá giải pháp" → `/services#smart-lighting`
+2. badge "ITS · QCVN 41:2019" · heading "Đèn tín hiệu giao thông" · sub "Thiết kế, cung cấp và lắp đặt cho nút giao đô thị — tuân thủ QCVN và tiêu chuẩn ITS Việt Nam." · CTA "Xem sản phẩm" → `/services#traffic-light`
+3. badge "Hạ tầng điện" · heading "Đối tác kỹ thuật tin cậy" · sub "Đường dây trung/hạ thế, trạm biến áp, tủ điều khiển — phục vụ chủ đầu tư, ban quản lý đô thị và nhà thầu trên toàn quốc." · CTA "Yêu cầu báo giá" → `/contact`
+
+**Việc cần làm:**
+- Sửa `HeroCarousel.tsx`: nhận `slides` qua props (vẫn `"use client"` cho embla). Nếu `slide.image` có → `<Image src fill className="object-cover">` + lớp phủ tối để chữ đọc được; không có → giữ gradient fallback hiện tại. Bỏ icon bắt buộc (icon thành optional/bỏ).
+- Tạo Server Component wrapper `HeroCarouselSection` (hoặc fetch ngay tại `page.tsx`) gọi `getContent("home_hero")` rồi truyền xuống `HeroCarousel`.
+- Form admin `AdminHeroForm` (client, `useFieldArray`): thêm/xoá/sắp xếp slide; mỗi slide có ImageUploader + các input; nút Lưu gọi `updateContentSection("home_hero", ...)`. Nhúng vào tab "Trang chủ" của `/admin/content`.
+- `next.config.mjs`: đảm bảo `images.remotePatterns` đã có `res.cloudinary.com` (đã có) cho ảnh hero.
+
+---
+
+## Prompt 8.3 — Các section text còn lại của trang chủ
+
+Cho sửa toàn bộ text trang chủ (trừ phần DB-driven sản phẩm/dự án/tin).
+
+**`home_about`** (component `AboutSummary.tsx`, server):
+`{ badge, heading, paragraph1, paragraph2, ctaLabel, ctaHref, stats: [{value,label} × 4] }`.
+Mặc định: badge "Về LAVIPCO"; heading "Đối tác kỹ thuật trong lĩnh vực chiếu sáng & hạ tầng đô thị"; p1/p2 (copy từ component); CTA "Tìm hiểu thêm"→`/about`; stats: 10+/"Năm kinh nghiệm", 50+/"Dự án đã thực hiện", 100+/"Khách hàng tin cậy", 30+/"Kỹ sư & nhân sự". (Giữ `{name}/{fullName}` từ SITE_CONFIG bằng cách cho text mặc định đã điền sẵn "LAVIPCO".)
+
+**`home_services_header`** (header của `ServicesGrid.tsx` — KHÔNG đụng danh sách service từ DB):
+`{ badge, heading, subHeading }`. Mặc định: "Dịch vụ" / "Dịch vụ của chúng tôi" / "Giải pháp toàn diện từ thiết bị tới phần mềm điều khiển cho hạ tầng đô thị."
+
+**`home_why`** (component `WhyChooseUs.tsx`, server):
+`{ badge, heading, reasons: [{title,description} × 4] }`. Mặc định copy 4 thẻ hiện có (Tuân thủ tiêu chuẩn / Đội kỹ thuật giàu kinh nghiệm / Sẵn sàng cho Smart City / Hỗ trợ dài hạn). Icon giữ cố định trong code (map theo index) — không cần admin sửa icon.
+
+**`home_cta`** (component `HomeCTA.tsx`, server):
+`{ heading, paragraph, items: string[] (≤6), button1Label, button1Href, button2Label, button2Href }`. Mặc định: "Cần tư vấn cho dự án của bạn?" / đoạn mô tả / 4 item checklist / "Liên hệ ngay"→`/contact` / "Yêu cầu báo giá"→`/contact?type=quotation`.
+
+**Việc cần làm:** chuyển 4 component trên thành async server đọc `getContent(...)`; tạo các form admin tương ứng (`useFieldArray` cho stats/reasons/items) nhúng vào tab "Trang chủ". Giữ nguyên layout/style hiện tại.
+
+---
+
+## Prompt 8.4 — Trang giới thiệu: các section text + ảnh Câu chuyện
+
+**`about_hero`** (`AboutHero.tsx`): `{ badge, heading, paragraph }`. Mặc định: "Về LAVIPCO" / "Đối tác kỹ thuật cho đô thị thông minh Việt Nam" / đoạn mô tả hiện có.
+
+**`about_story`** (`CompanyStory.tsx`): `{ badge, heading, paragraph1, paragraph2, image, overlayBadge, overlayCaption }`. Mặc định: "Câu chuyện" / "Hành trình xây dựng năng lực kỹ thuật" / 2 đoạn hiện có / image rỗng (fallback icon+gradient) / overlay "Hơn 10 năm kinh nghiệm" / "Kỹ thuật bền vững · An toàn · Tuân thủ tiêu chuẩn". **Có ImageUploader cho `image`** (thay TODO `/about/story.jpg`).
+
+**`about_vmv`** (`VisionMissionValues.tsx`): `{ badge, heading, pillars: [{label,title,description} × 3] }`. Mặc định 3 trụ cột (Tầm nhìn / Sứ mệnh / Giá trị cốt lõi) copy hiện có. Icon cố định theo index.
+
+**`about_cta`** (`AboutCTA.tsx`): `{ heading, paragraph, button1Label, button1Href, button2Label, button2Href }`. Mặc định: "Liên hệ với chúng tôi" / đoạn mô tả / "Liên hệ ngay"→`/contact` / "Xem dự án đã thực hiện"→`/projects`. (Hotline/email vẫn lấy từ Settings như đã wire ở `getSiteContact`.)
+
+**Việc cần làm:** 4 component → async server đọc `getContent`; form admin tương ứng nhúng vào tab "Trang giới thiệu".
+
+---
+
+## Prompt 8.5 — Trang giới thiệu: phần lặp + ảnh (Timeline, Lãnh đạo, Chứng nhận, Đối tác)
+
+**`about_timeline`** (`CompanyTimeline.tsx`): `{ badge, heading, milestones: [{year,title,description}] (≤12) }`. Mặc định 5 mốc 2014/2017/2020/2023/2026 (copy hiện có — mốc 2026 nhắc dự án Ninh Thạnh là dự án ĐỘC LẬP, không liên quan gói thầu XL-05, theo CLAUDE.md).
+
+**`about_leadership`** (`Leadership.tsx`): `{ badge, heading, leaders: [{name,role,bio,photo}] (≤8) }`. **ImageUploader cho `photo`** mỗi người (thay placeholder UserCircle). Mặc định 4 người với name để trống/placeholder (`""`) + role/bio hiện có — admin điền tên thật.
+
+**`about_certs`** (`CertificationsGrid.tsx`): `{ badge, heading, paragraph, certs: [{name,issuer,logo}] (≤12) }`. `logo` optional (ImageUploader) — không có → fallback icon như hiện tại. Mặc định 6 chứng nhận copy hiện có.
+
+**`about_partners`** (`PartnersGrid.tsx`): `{ badge, heading, paragraph, partners: [{name,logo}] (≤20) }`. `logo` optional → fallback hiển thị tên dạng text. Mặc định 8 đối tác (tên hiện có, logo rỗng).
+
+**Việc cần làm:** 4 component → async server đọc `getContent`; form admin `useFieldArray` (thêm/xoá/sắp xếp item, ImageUploader cho ảnh) nhúng vào tab "Trang giới thiệu".
+
+---
+
+## Prompt 8.6 — Hoàn thiện CMS nội dung
+
+- **Revalidate đúng:** xác nhận `updateContentSection` revalidate cả `/` và `/about`. Trang chủ đang `export const revalidate = 60`; cân nhắc đổi sang đọc động hoặc giữ ISR + dựa revalidatePath.
+- **Cập nhật `public/huongdan.html`:** thêm section "Quản lý Nội dung trang" hướng dẫn sửa Hero/section/ảnh, lưu ý kích thước ảnh khuyến nghị + việc thay đổi hiện ngay sau khi Lưu.
+- **(Optional) AI hỗ trợ:** cho phép nút ✨ AIGenerateButton ở các field đoạn văn dài (about_story, home_about) — thêm `AIContentType` mới nếu cần.
+- **Seed (optional):** thêm các key nội dung mặc định vào `prisma/seed.ts` để môi trường mới có sẵn (không bắt buộc vì đã fallback default trong code).
+- **Test checklist:** sửa từng section trong admin → Lưu → kiểm tra hiện đúng ở trang public; xoá ảnh → fallback gradient/icon; nhập JSON/ảnh lỗi → trang vẫn không vỡ (dùng default); kiểm tra mobile.
+
+**Ràng buộc chung Giai đoạn 8:** giữ nguyên layout/responsive hiện tại (chỉ thay nguồn dữ liệu); type-check + lint sạch sau mỗi prompt; KHÔNG xoá nội dung mặc định (dùng làm fallback); ảnh luôn qua ImageUploader + Cloudinary; mọi action `require ADMIN`.
+
+---
+
 # MẸO VIẾT PROMPT HIỆU QUẢ
 
 Khi tự viết prompt cho Claude Code (ngoài bộ mẫu này), Lam tham khảo các nguyên tắc sau:
