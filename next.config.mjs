@@ -60,10 +60,9 @@ const nextConfig = {
   // Cần cho src/instrumentation.ts (nạp Sentry server/edge) ở Next 14
   experimental: {
     instrumentationHook: true,
-    // Thư viện Node nặng/dynamic-require: để Next require lúc runtime thay vì bundle
-    // vào serverless function (tránh lỗi 500 trên Vercel — vd jsdom của
-    // isomorphic-dompurify khi trang admin import gián tiếp, hoặc exceljs).
-    serverComponentsExternalPackages: ["exceljs", "isomorphic-dompurify", "jsdom"],
+    // exceljs nặng + dynamic-require: để Next require lúc runtime thay vì bundle
+    // vào serverless function (giảm kích thước function, tránh lỗi bundle).
+    serverComponentsExternalPackages: ["exceljs"],
   },
   images: {
     remotePatterns: [

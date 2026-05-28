@@ -1,8 +1,12 @@
 /**
  * Sanitize HTML từ Tiptap editor trước khi render ở public page.
  * Bảo vệ XSS — chấp nhận chỉ tags + attributes whitelist.
+ *
+ * Dùng sanitize-html (thuần Node, không phụ thuộc jsdom) để chạy được cả ở
+ * build lẫn runtime serverless (Vercel). isomorphic-dompurify kéo theo jsdom
+ * gây lỗi ERR_REQUIRE_ESM trên runtime Vercel nên đã thay thế.
  */
-import DOMPurify from "isomorphic-dompurify";
+import sanitizeHtmlLib from "sanitize-html";
 
 const ALLOWED_TAGS = [
   "p",
@@ -34,6 +38,7 @@ const ALLOWED_TAGS = [
   "td",
 ];
 
+// Whitelist áp dụng cho mọi tag (giữ tương đương cấu hình DOMPurify cũ).
 const ALLOWED_ATTR = [
   "href",
   "title",
@@ -46,9 +51,11 @@ const ALLOWED_ATTR = [
 ];
 
 export function sanitizeHtml(html: string): string {
-  return DOMPurify.sanitize(html, {
-    ALLOWED_TAGS,
-    ALLOWED_ATTR,
-    ALLOW_DATA_ATTR: false,
+  return sanitizeHtmlLib(html, {
+    allowedTags: ALLOWED_TAGS,
+    allowedAttributes: { "*": ALLOWED_ATTR },
+    allowedSchemes: ["http", "https", "mailto", "tel"],
+    // Chặn data-* attributes (tương đương ALLOW_DATA_ATTR: false)
+    allowedSchemesByTag: { img: ["http", "https"] },
   });
 }
