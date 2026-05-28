@@ -15,6 +15,7 @@ import {
   MessageSquare,
   Settings,
   UserCog,
+  LayoutTemplate,
   type LucideIcon,
 } from "lucide-react";
 
@@ -38,6 +39,7 @@ const NAV: NavItem[] = [
   { href: "/admin/blog", label: "Tin tức", Icon: Newspaper },
   { href: "/admin/coupons", label: "Khuyến mãi", Icon: Ticket },
   { href: "/admin/messages", label: "Tin nhắn liên hệ", Icon: MessageSquare },
+  { href: "/admin/content", label: "Nội dung trang", Icon: LayoutTemplate },
   { href: "/admin/settings", label: "Cấu hình", Icon: Settings },
   { href: "/admin/users", label: "Người dùng", Icon: UserCog },
 ];

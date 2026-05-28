@@ -3,6 +3,7 @@ import { ArrowRight } from "lucide-react";
 
 import { db } from "@/lib/db";
 import { getServiceIcon } from "@/lib/icons";
+import { getContent } from "@/lib/content";
 import { Container } from "@/components/layout/Container";
 import { Badge } from "@/components/ui/badge";
 import {
@@ -18,11 +19,14 @@ import {
  * Fetch tối đa 6 dịch vụ đang active, sort theo sortOrder.
  */
 export async function ServicesGrid() {
-  const services = await db.service.findMany({
-    where: { isActive: true },
-    orderBy: { sortOrder: "asc" },
-    take: 6,
-  });
+  const [services, header] = await Promise.all([
+    db.service.findMany({
+      where: { isActive: true },
+      orderBy: { sortOrder: "asc" },
+      take: 6,
+    }),
+    getContent("home_services_header"),
+  ]);
 
   if (services.length === 0) return null;
 
@@ -30,15 +34,17 @@ export async function ServicesGrid() {
     <section id="services" className="bg-muted/30 py-16 md:py-24">
       <Container>
         <div className="mx-auto max-w-2xl text-center">
-          <Badge variant="brand" className="mb-3 rounded-full">
-            Dịch vụ
-          </Badge>
+          {header.badge && (
+            <Badge variant="brand" className="mb-3 rounded-full">
+              {header.badge}
+            </Badge>
+          )}
           <h2 className="text-balance text-3xl font-bold md:text-4xl">
-            Dịch vụ của chúng tôi
+            {header.heading}
           </h2>
-          <p className="mt-3 text-muted-foreground">
-            Giải pháp toàn diện từ thiết bị tới phần mềm điều khiển cho hạ tầng đô thị.
-          </p>
+          {header.subHeading && (
+            <p className="mt-3 text-muted-foreground">{header.subHeading}</p>
+          )}
         </div>
 
         <div className="mt-12 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">

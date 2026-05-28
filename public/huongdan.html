@@ -305,12 +305,13 @@
   <h3>⚙️ Cấu hình</h3>
   <ul>
     <li><a href="#settings">12. Cài đặt hệ thống</a></li>
+    <li><a href="#content">13. Nội dung trang</a></li>
   </ul>
 
   <h3>💡 Khác</h3>
   <ul>
-    <li><a href="#tips">13. Mẹo và lưu ý</a></li>
-    <li><a href="#faq">14. FAQ</a></li>
+    <li><a href="#tips">14. Mẹo và lưu ý</a></li>
+    <li><a href="#faq">15. FAQ</a></li>
   </ul>
 </aside>
 
@@ -892,10 +893,60 @@
   <strong>💡 Lưu ý:</strong> Một số setting (vd Logo, GA ID) chỉ apply sau khi <strong>redeploy</strong> hoặc <strong>clear cache</strong>. Liên hệ kỹ thuật nếu cần.
 </div>
 
-<!-- ==================== 13. TIPS ==================== -->
-<h2 id="tips">13. Mẹo và lưu ý</h2>
+<!-- ==================== 13. NỘI DUNG TRANG ==================== -->
+<h2 id="content">13. Nội dung trang (Trang chủ &amp; Giới thiệu)</h2>
 
-<h3>13.1. Bảo mật</h3>
+<p>URL: <code>/admin/content</code></p>
+
+<p>Sửa <strong>chữ và hình ảnh</strong> của Trang chủ và Trang giới thiệu mà không cần lập trình. Màn hình chia 2 tab: <strong>Trang chủ</strong> và <strong>Trang giới thiệu</strong>; mỗi mục có nút <strong>Lưu</strong> riêng.</p>
+
+<h3>13.1. Tab Trang chủ — 5 mục</h3>
+<table>
+  <thead><tr><th>Mục</th><th>Sửa được gì</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Hero carousel</strong></td><td>Thêm/xoá/sắp xếp slide; mỗi slide có ảnh nền, badge, tiêu đề, mô tả, nút CTA + link</td></tr>
+    <tr><td><strong>Giới thiệu tóm tắt</strong></td><td>Badge, tiêu đề, 2 đoạn văn, nút CTA, các số liệu thống kê</td></tr>
+    <tr><td><strong>Tiêu đề khu Dịch vụ</strong></td><td>Badge, tiêu đề, mô tả (danh sách dịch vụ lấy từ mục Dịch vụ)</td></tr>
+    <tr><td><strong>Vì sao chọn chúng tôi</strong></td><td>Badge, tiêu đề, các thẻ lý do (icon cố định theo thứ tự)</td></tr>
+    <tr><td><strong>Kêu gọi hành động (CTA)</strong></td><td>Tiêu đề, mô tả, danh sách điểm nổi bật, 2 nút</td></tr>
+  </tbody>
+</table>
+
+<h3>13.2. Tab Trang giới thiệu — 8 mục</h3>
+<table>
+  <thead><tr><th>Mục</th><th>Sửa được gì</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Hero giới thiệu</strong></td><td>Badge, tiêu đề, mô tả</td></tr>
+    <tr><td><strong>Câu chuyện công ty</strong></td><td>Badge, tiêu đề, 2 đoạn, <strong>ảnh minh hoạ</strong>, nhãn + chú thích overlay</td></tr>
+    <tr><td><strong>Tầm nhìn · Sứ mệnh · Giá trị</strong></td><td>Badge, tiêu đề, 3 trụ cột (icon cố định)</td></tr>
+    <tr><td><strong>Lịch sử phát triển</strong></td><td>Các cột mốc: năm, tiêu đề, mô tả — thêm/xoá/sắp xếp</td></tr>
+    <tr><td><strong>Đội ngũ lãnh đạo</strong></td><td>Thành viên: <strong>ảnh</strong>, tên, chức vụ, giới thiệu</td></tr>
+    <tr><td><strong>Chứng nhận &amp; tiêu chuẩn</strong></td><td>Tên, lĩnh vực, <strong>logo</strong> (bỏ trống → icon mặc định)</td></tr>
+    <tr><td><strong>Đối tác &amp; khách hàng</strong></td><td>Tên + <strong>logo</strong> (bỏ trống → hiện tên dạng chữ)</td></tr>
+    <tr><td><strong>Kêu gọi hành động (CTA)</strong></td><td>Tiêu đề, mô tả, 2 nút (hotline/email lấy từ Cấu hình → Contact)</td></tr>
+  </tbody>
+</table>
+
+<h3>13.3. Các bước sửa</h3>
+<ol class="steps">
+  <li>Vào <code>/admin/content</code>, chọn tab <strong>Trang chủ</strong> hoặc <strong>Trang giới thiệu</strong>.</li>
+  <li>Tìm mục cần sửa, chỉnh chữ trong các ô. Với mục có danh sách (slide, số liệu, mốc, lãnh đạo...): bấm <strong>+ Thêm</strong> để thêm, <strong>↑ ↓</strong> để sắp xếp, biểu tượng <strong>thùng rác</strong> để xoá.</li>
+  <li>Với ảnh: kéo-thả hoặc bấm vùng tải ảnh để chọn file (JPG/PNG/WEBP, ≤ 5MB).</li>
+  <li>Bấm <strong>nút Lưu</strong> của mục đó. Thay đổi hiện ra <strong>ngay</strong> trên trang public.</li>
+</ol>
+
+<div class="alert tip">
+  <strong>💡 Ảnh khuyến nghị:</strong> Hero nên dùng ảnh ngang chất lượng cao (~1920×900px); lãnh đạo dùng ảnh chân dung; logo đối tác/chứng nhận nên là PNG nền trong suốt. Ảnh tự tải lên Cloudinary khi bấm Lưu.
+</div>
+
+<div class="alert success">
+  <strong>✓ An toàn:</strong> Để trống một mục → hệ thống tự dùng <strong>nội dung mặc định</strong>, trang không bao giờ bị trống. Xoá ảnh → quay về nền gradient/icon mặc định.
+</div>
+
+<!-- ==================== 14. TIPS ==================== -->
+<h2 id="tips">14. Mẹo và lưu ý</h2>
+
+<h3>14.1. Bảo mật</h3>
 
 <ul>
   <li>✅ Đổi password ngay sau lần đăng nhập đầu</li>
@@ -905,7 +956,7 @@
   <li>❌ Không copy paste mật khẩu vào chat/email (kể cả nội bộ)</li>
 </ul>
 
-<h3>13.2. Quy trình tạo sản phẩm chuẩn</h3>
+<h3>14.2. Quy trình tạo sản phẩm chuẩn</h3>
 
 <ol class="steps">
   <li>Tạo nháp (DRAFT) — điền tất cả thông tin + upload ảnh đầy đủ</li>
@@ -915,7 +966,7 @@
   <li>Nếu là sản phẩm mới quan trọng → bật thêm "Nổi bật" để xuất hiện trên trang chủ</li>
 </ol>
 
-<h3>13.3. Quy trình xử lý đơn chuẩn</h3>
+<h3>14.3. Quy trình xử lý đơn chuẩn</h3>
 
 <ol class="steps">
   <li><strong>PENDING:</strong> đơn mới đặt, kiểm tra thông tin khách + tồn kho</li>
@@ -927,7 +978,7 @@
   <li>Đổi orderStatus = <strong>COMPLETED</strong></li>
 </ol>
 
-<h3>13.4. Khi nào dùng REFUND vs CANCEL?</h3>
+<h3>14.4. Khi nào dùng REFUND vs CANCEL?</h3>
 
 <table>
   <thead>
@@ -953,7 +1004,7 @@
   </tbody>
 </table>
 
-<h3>13.5. Quy ước đặt slug</h3>
+<h3>14.5. Quy ước đặt slug</h3>
 
 <ul>
   <li>Tự động tạo từ tên — chỉ sửa nếu cần</li>
@@ -962,8 +1013,8 @@
   <li>Slug đã publish → hạn chế đổi (sẽ break các link đã share + SEO Google đã index)</li>
 </ul>
 
-<!-- ==================== 14. FAQ ==================== -->
-<h2 id="faq">14. FAQ</h2>
+<!-- ==================== 15. FAQ ==================== -->
+<h2 id="faq">15. FAQ</h2>
 
 <h3>❓ Quên mật khẩu admin?</h3>
 <p>Liên hệ kỹ thuật reset qua Supabase Dashboard hoặc chạy script seed lại password.</p>

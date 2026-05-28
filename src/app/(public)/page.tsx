@@ -1,4 +1,4 @@
-import { HeroCarousel } from "@/components/home/HeroCarousel";
+import { HeroCarouselSection } from "@/components/home/HeroCarouselSection";
 import { AboutSummary } from "@/components/home/AboutSummary";
 import { ServicesGrid } from "@/components/home/ServicesGrid";
 import { FeaturedProducts } from "@/components/home/FeaturedProducts";
@@ -21,7 +21,7 @@ export const revalidate = 60;
 export default function HomePage() {
   return (
     <>
-      <HeroCarousel />
+      <HeroCarouselSection />
       <AboutSummary />
       <ServicesGrid />
       <FeaturedProducts />

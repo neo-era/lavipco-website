@@ -3,9 +3,15 @@ import { ArrowRight, Phone, Mail } from "lucide-react";
 
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/button";
-import { SITE_CONFIG } from "@/lib/constants";
+import { getContent } from "@/lib/content";
+import { getSiteContact } from "@/lib/site-settings";
 
-export function AboutCTA() {
+export async function AboutCTA() {
+  const [c, contact] = await Promise.all([
+    getContent("about_cta"),
+    getSiteContact(),
+  ]);
+
   return (
     <section
       id="about-cta"
@@ -15,49 +21,50 @@ export function AboutCTA() {
       <Container className="relative grid items-center gap-8 md:grid-cols-2">
         <div className="space-y-3">
           <h2 className="text-balance text-3xl font-bold md:text-4xl">
-            Liên hệ với chúng tôi
+            {c.heading}
           </h2>
-          <p className="text-white/85 md:text-lg">
-            Đội ngũ LAVIPCO sẵn sàng tư vấn giải pháp kỹ thuật phù hợp với dự án
-            của bạn. Liên hệ ngay để được hỗ trợ nhanh chóng.
-          </p>
-          {(SITE_CONFIG.hotline || SITE_CONFIG.email) && (
+          <p className="text-white/85 md:text-lg">{c.paragraph}</p>
+          {(contact.hotline || contact.email) && (
             <div className="flex flex-wrap items-center gap-4 pt-2 text-sm text-white/85">
-              {SITE_CONFIG.hotline && (
+              {contact.hotline && (
                 <a
-                  href={`tel:${SITE_CONFIG.hotline.replace(/\s/g, "")}`}
+                  href={`tel:${contact.hotline.replace(/\s/g, "")}`}
                   className="flex items-center gap-2 hover:text-brand-accent"
                 >
                   <Phone className="h-4 w-4" />
-                  {SITE_CONFIG.hotline}
+                  {contact.hotline}
                 </a>
               )}
-              {SITE_CONFIG.email && (
+              {contact.email && (
                 <a
-                  href={`mailto:${SITE_CONFIG.email}`}
+                  href={`mailto:${contact.email}`}
                   className="flex items-center gap-2 hover:text-brand-accent"
                 >
                   <Mail className="h-4 w-4" />
-                  {SITE_CONFIG.email}
+                  {contact.email}
                 </a>
               )}
             </div>
           )}
         </div>
         <div className="flex flex-col gap-3 md:items-end">
-          <Button asChild size="xl" variant="accent" className="w-full sm:w-auto">
-            <Link href="/contact">
-              Liên hệ ngay <ArrowRight className="h-4 w-4" />
-            </Link>
-          </Button>
-          <Button
-            asChild
-            size="xl"
-            variant="outline"
-            className="w-full border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white sm:w-auto"
-          >
-            <Link href="/projects">Xem dự án đã thực hiện</Link>
-          </Button>
+          {c.button1Label && (
+            <Button asChild size="xl" variant="accent" className="w-full sm:w-auto">
+              <Link href={c.button1Href || "#"}>
+                {c.button1Label} <ArrowRight className="h-4 w-4" />
+              </Link>
+            </Button>
+          )}
+          {c.button2Label && (
+            <Button
+              asChild
+              size="xl"
+              variant="outline"
+              className="w-full border-white/30 bg-transparent text-white hover:bg-white/10 hover:text-white sm:w-auto"
+            >
+              <Link href={c.button2Href || "#"}>{c.button2Label}</Link>
+            </Button>
+          )}
         </div>
       </Container>
     </section>

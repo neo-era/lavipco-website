@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Giới thiệu Website - LAVIPCO</title>
+<style>
+  :root {
+    --brand: #0B5FA5;
+    --brand-light: #eff6ff;
+    --accent: #F59E0B;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #ffffff;
+    --bg-soft: #f9fafb;
+    --code-bg: #f3f4f6;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--brand);
+    color: white;
+    padding: 14px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  header .subtitle { font-size: 12px; opacity: 0.85; margin-top: 2px; }
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 60px);
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { display: none; }
+  }
+  aside {
+    border-right: 1px solid var(--border);
+    background: var(--bg-soft);
+    padding: 24px 16px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    position: sticky;
+    top: 60px;
+  }
+  aside h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 16px 0 8px;
+    padding: 0 8px;
+  }
+  aside ul { list-style: none; padding: 0; margin: 0; }
+  aside a {
+    display: block;
+    padding: 6px 12px;
+    text-decoration: none;
+    color: var(--text);
+    border-radius: 6px;
+    font-size: 13.5px;
+    transition: background 0.15s;
+  }
+  aside a:hover { background: white; color: var(--brand); }
+  main { padding: 32px 40px; max-width: 920px; }
+  @media (max-width: 900px) { main { padding: 20px; } }
+  h2 {
+    color: var(--brand);
+    border-bottom: 2px solid var(--brand-light);
+    padding-bottom: 8px;
+    margin-top: 48px;
+    margin-bottom: 16px;
+    font-size: 24px;
+    scroll-margin-top: 80px;
+  }
+  h2:first-child { margin-top: 0; }
+  h3 { margin-top: 28px; margin-bottom: 8px; font-size: 18px; scroll-margin-top: 80px; }
+  h4 { margin-top: 20px; margin-bottom: 6px; font-size: 15px; color: var(--brand); }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 24px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  code {
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Cascadia Code", Monaco, Consolas, monospace;
+    font-size: 13px;
+    color: #be123c;
+  }
+  .alert {
+    border-left: 4px solid;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 14px;
+  }
+  .alert.tip { border-color: var(--brand); background: var(--brand-light); }
+  .alert.warn { border-color: var(--warning); background: #fef3c7; }
+  .alert.success { border-color: var(--success); background: #dcfce7; }
+  .alert strong { display: block; margin-bottom: 4px; }
+  table { border-collapse: collapse; width: 100%; margin: 12px 0; font-size: 14px; }
+  th, td { border: 1px solid var(--border); padding: 8px 12px; text-align: left; vertical-align: top; }
+  th { background: var(--bg-soft); font-weight: 600; }
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    vertical-align: middle;
+  }
+  .badge.brand { background: var(--brand); color: white; }
+  .badge.accent { background: var(--accent); color: white; }
+  .badge.success { background: var(--success); color: white; }
+  .badge.muted { background: var(--muted); color: white; }
+  footer {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+  }
+  .mobile-toc-toggle {
+    display: none;
+    width: 100%;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .mobile-toc-toggle::after { content: "▼"; float: right; color: var(--muted); }
+  @media (max-width: 900px) { .mobile-toc-toggle { display: block; } }
+
+  /* Hero giới thiệu */
+  .hero {
+    background: linear-gradient(135deg, var(--brand), #073d6b);
+    color: white;
+    border-radius: 14px;
+    padding: 32px;
+    margin-bottom: 8px;
+  }
+  .hero h2 {
+    color: white;
+    border: none;
+    margin: 0 0 10px;
+    font-size: 28px;
+    padding: 0;
+  }
+  .hero p { color: rgba(255,255,255,0.9); margin: 6px 0; }
+  .hero .tags { margin-top: 14px; display: flex; flex-wrap: wrap; gap: 8px; }
+  .hero .tags span {
+    background: rgba(255,255,255,0.15);
+    border: 1px solid rgba(255,255,255,0.25);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 12px;
+  }
+  /* Lưới thẻ tính năng */
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+    gap: 14px;
+    margin: 16px 0;
+  }
+  .card {
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    padding: 16px;
+    background: var(--bg-soft);
+  }
+  .card h4 { margin-top: 0; }
+  .card p { font-size: 13.5px; color: var(--muted); margin: 4px 0 0; }
+  .card .ico { font-size: 22px; }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>🏛️ Giới thiệu Website LAVIPCO</h1>
+  <div class="subtitle">Tổng quan tính năng &amp; công nghệ của website</div>
+</header>
+
+<div class="layout">
+
+<aside>
+  <h3>Mục lục</h3>
+  <h3>Tổng quan</h3>
+  <ul>
+    <li><a href="#overview">1. Giới thiệu chung</a></li>
+    <li><a href="#audience">2. Đối tượng sử dụng</a></li>
+  </ul>
+  <h3>Tính năng</h3>
+  <ul>
+    <li><a href="#public">3. Trang công khai</a></li>
+    <li><a href="#admin">4. Trang quản trị</a></li>
+  </ul>
+  <h3>Công nghệ</h3>
+  <ul>
+    <li><a href="#stack">5. Công nghệ cốt lõi</a></li>
+    <li><a href="#integrations">6. Tích hợp bên thứ ba</a></li>
+    <li><a href="#architecture">7. Kiến trúc &amp; bảo mật</a></li>
+    <li><a href="#seo">8. SEO &amp; hiệu năng</a></li>
+    <li><a href="#deploy">9. Triển khai</a></li>
+  </ul>
+</aside>
+
+<main>
+
+<button class="mobile-toc-toggle" onclick="document.querySelector('aside').style.display = document.querySelector('aside').style.display === 'block' ? 'none' : 'block';">
+  📑 Mục lục
+</button>
+
+<div class="hero">
+  <h2>Website LAVIPCO</h2>
+  <p>Nền tảng <strong>thương mại điện tử kết hợp giới thiệu doanh nghiệp</strong> cho Công ty TNHH Kỹ Nghệ Lâm Việt Phát — chuyên đèn tín hiệu giao thông, chiếu sáng đô thị thông minh, hạ tầng điện và Smart City.</p>
+  <p>Xây dựng trên nền tảng web hiện đại, tối ưu tốc độ, chuẩn SEO, bảo mật và quản trị nội dung linh hoạt.</p>
+  <div class="tags">
+    <span>Next.js 14</span>
+    <span>TypeScript</span>
+    <span>Tailwind CSS</span>
+    <span>Prisma + PostgreSQL</span>
+    <span>Auth.js</span>
+    <span>Vercel</span>
+  </div>
+</div>
+
+<!-- ==================== 1. OVERVIEW ==================== -->
+<h2 id="overview">1. Giới thiệu chung</h2>
+<p>Website LAVIPCO là một ứng dụng web full-stack vừa <strong>bán hàng online</strong> vừa <strong>giới thiệu năng lực doanh nghiệp</strong>. Toàn bộ nội dung, sản phẩm, đơn hàng và cấu hình được quản lý qua một Admin Panel tích hợp.</p>
+<ul>
+  <li>Trưng bày sản phẩm thiết bị chiếu sáng, đèn tín hiệu, phụ kiện, hệ thống điều khiển.</li>
+  <li>Giới thiệu dịch vụ kỹ thuật và portfolio dự án đã thực hiện.</li>
+  <li>Hỗ trợ giỏ hàng, thanh toán, theo dõi đơn hàng, yêu cầu báo giá và liên hệ tư vấn.</li>
+  <li>Quản trị toàn bộ nội dung và vận hành mà không cần lập trình.</li>
+</ul>
+
+<!-- ==================== 2. AUDIENCE ==================== -->
+<h2 id="audience">2. Đối tượng sử dụng</h2>
+<table>
+  <thead><tr><th>Nhóm</th><th>Mô tả</th></tr></thead>
+  <tbody>
+    <tr><td><span class="badge brand">B2C</span></td><td>Khách mua lẻ sản phẩm chiếu sáng, phụ kiện.</td></tr>
+    <tr><td><span class="badge accent">B2B</span></td><td>Chủ đầu tư, nhà thầu, ban quản lý đô thị — cần báo giá, tư vấn dự án.</td></tr>
+    <tr><td><span class="badge success">Quản trị</span></td><td>Quản trị viên &amp; nhân viên LAVIPCO quản lý nội dung, đơn hàng, sản phẩm.</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== 3. PUBLIC ==================== -->
+<h2 id="public">3. Tính năng trang công khai</h2>
+<div class="grid">
+  <div class="card"><div class="ico">🏠</div><h4>Trang chủ động</h4><p>Hero carousel, giới thiệu, dịch vụ, sản phẩm/dự án nổi bật, tin tức — nội dung sửa được từ admin.</p></div>
+  <div class="card"><div class="ico">🛒</div><h4>Sản phẩm &amp; giỏ hàng</h4><p>Danh sách + bộ lọc theo danh mục/thương hiệu, trang chi tiết, thông số kỹ thuật, giỏ hàng.</p></div>
+  <div class="card"><div class="ico">💳</div><h4>Thanh toán</h4><p>Checkout với COD, chuyển khoản ngân hàng và VNPay; tính phí ship realtime.</p></div>
+  <div class="card"><div class="ico">🔍</div><h4>Tìm kiếm</h4><p>Tìm sản phẩm nhanh, gợi ý tức thì, không dấu.</p></div>
+  <div class="card"><div class="ico">🏗️</div><h4>Dịch vụ &amp; Dự án</h4><p>Giới thiệu dịch vụ kỹ thuật và portfolio dự án theo từng lĩnh vực.</p></div>
+  <div class="card"><div class="ico">📰</div><h4>Tin tức (Blog)</h4><p>Bài viết chuẩn SEO, tags, ảnh bìa.</p></div>
+  <div class="card"><div class="ico">📞</div><h4>Liên hệ &amp; Báo giá</h4><p>Form liên hệ, yêu cầu báo giá, bản đồ Google Maps, thông tin công ty.</p></div>
+  <div class="card"><div class="ico">👤</div><h4>Tài khoản</h4><p>Đăng ký/đăng nhập (email hoặc Google), lịch sử đơn, sổ địa chỉ, danh sách yêu thích.</p></div>
+</div>
+
+<!-- ==================== 4. ADMIN ==================== -->
+<h2 id="admin">4. Tính năng trang quản trị</h2>
+<p>Admin Panel tại <code>/admin</code> — yêu cầu quyền ADMIN/STAFF.</p>
+<table>
+  <thead><tr><th>Mục</th><th>Chức năng</th></tr></thead>
+  <tbody>
+    <tr><td><strong>Tổng quan</strong></td><td>Dashboard thống kê doanh thu, đơn hàng, biểu đồ.</td></tr>
+    <tr><td><strong>Đơn hàng</strong></td><td>Quản lý trạng thái đơn, thanh toán, giao hàng; gửi email cập nhật.</td></tr>
+    <tr><td><strong>Sản phẩm</strong></td><td>CRUD sản phẩm, biến thể, tồn kho, thông số kỹ thuật, ảnh, trạng thái.</td></tr>
+    <tr><td><strong>Danh mục</strong></td><td>Cây danh mục phân cấp, ảnh, sắp xếp, ẩn/hiện.</td></tr>
+    <tr><td><strong>Khách hàng &amp; Người dùng</strong></td><td>Tag, ghi chú, khoá tài khoản, đổi vai trò, đặt lại mật khẩu, tạo tài khoản nội bộ.</td></tr>
+    <tr><td><strong>Dự án &amp; Dịch vụ</strong></td><td>CRUD portfolio + dịch vụ kỹ thuật (kèm quy trình).</td></tr>
+    <tr><td><strong>Tin tức</strong></td><td>Trình soạn thảo rich-text (Tiptap), tags, ảnh.</td></tr>
+    <tr><td><strong>Mã giảm giá</strong></td><td>Tạo coupon %/cố định, điều kiện áp dụng, giới hạn dùng.</td></tr>
+    <tr><td><strong>Tin nhắn liên hệ</strong></td><td>Nhận, phản hồi, xử lý yêu cầu từ khách.</td></tr>
+    <tr><td><strong>Nội dung trang</strong></td><td>Sửa text + ảnh Trang chủ &amp; Giới thiệu (CMS), không cần lập trình.</td></tr>
+    <tr><td><strong>Cấu hình</strong></td><td>Thông tin công ty, liên hệ, thanh toán, vận chuyển, email, SEO.</td></tr>
+  </tbody>
+</table>
+<div class="alert tip">
+  <strong>✨ AI Admin Copilot</strong>
+  Tích hợp Claude API hỗ trợ admin sinh nội dung (mô tả sản phẩm, bài blog, mô tả dịch vụ/dự án, meta SEO). AI chỉ hỗ trợ — admin luôn duyệt trước khi áp dụng.
+</div>
+
+<!-- ==================== 5. STACK ==================== -->
+<h2 id="stack">5. Công nghệ cốt lõi</h2>
+<table>
+  <thead><tr><th>Hạng mục</th><th>Công nghệ</th><th>Vai trò</th></tr></thead>
+  <tbody>
+    <tr><td>Framework</td><td><strong>Next.js 14</strong> (App Router)</td><td>Full-stack React, Server Components, SSR/ISR.</td></tr>
+    <tr><td>Ngôn ngữ</td><td><strong>TypeScript</strong> (strict)</td><td>An toàn kiểu, ít lỗi runtime.</td></tr>
+    <tr><td>Giao diện</td><td><strong>Tailwind CSS</strong> + shadcn/ui</td><td>Thiết kế responsive, component nhất quán.</td></tr>
+    <tr><td>Icon</td><td>lucide-react</td><td>Bộ icon vector.</td></tr>
+    <tr><td>Form &amp; Validate</td><td>React Hook Form + <strong>Zod</strong></td><td>Form hiệu năng cao, kiểm tra dữ liệu chặt.</td></tr>
+    <tr><td>State (client)</td><td>Zustand</td><td>Giỏ hàng (lưu localStorage).</td></tr>
+    <tr><td>Cơ sở dữ liệu</td><td><strong>PostgreSQL</strong> + Prisma ORM</td><td>Lưu trữ quan hệ, truy vấn type-safe, migration.</td></tr>
+    <tr><td>Xác thực</td><td><strong>Auth.js v5</strong> (NextAuth)</td><td>Email/mật khẩu + Google OAuth, phiên JWT.</td></tr>
+    <tr><td>Mã hoá mật khẩu</td><td>bcrypt (saltRounds=12)</td><td>Băm mật khẩu an toàn.</td></tr>
+    <tr><td>Soạn thảo</td><td>Tiptap</td><td>Rich-text editor cho blog.</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== 6. INTEGRATIONS ==================== -->
+<h2 id="integrations">6. Tích hợp bên thứ ba</h2>
+<p>Tất cả tích hợp theo cơ chế <strong>phòng thủ (defensive)</strong>: chỉ bật khi có cấu hình (env), thiếu thì tự fallback an toàn — không làm sập website.</p>
+<table>
+  <thead><tr><th>Dịch vụ</th><th>Mục đích</th></tr></thead>
+  <tbody>
+    <tr><td><strong>VNPay</strong></td><td>Cổng thanh toán online (sandbox/production).</td></tr>
+    <tr><td><strong>GHN</strong> (Giao Hàng Nhanh)</td><td>Tính phí vận chuyển realtime theo địa chỉ.</td></tr>
+    <tr><td><strong>Cloudinary</strong></td><td>Lưu trữ &amp; tối ưu hình ảnh.</td></tr>
+    <tr><td><strong>Resend</strong></td><td>Gửi email giao dịch (xác nhận đơn, cập nhật).</td></tr>
+    <tr><td><strong>Upstash Redis</strong></td><td>Rate limit chống spam (login, liên hệ, tìm kiếm).</td></tr>
+    <tr><td><strong>Sentry</strong></td><td>Theo dõi lỗi runtime.</td></tr>
+    <tr><td><strong>Vercel Analytics</strong></td><td>Lưu lượng truy cập + Core Web Vitals.</td></tr>
+    <tr><td><strong>Google Analytics / GTM</strong></td><td>Phân tích hành vi người dùng.</td></tr>
+    <tr><td><strong>Claude API</strong> (Anthropic)</td><td>AI hỗ trợ sinh nội dung trong admin.</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== 7. ARCHITECTURE ==================== -->
+<h2 id="architecture">7. Kiến trúc &amp; bảo mật</h2>
+<h3>Kiến trúc</h3>
+<ul>
+  <li><strong>Server Components</strong> ưu tiên — render phía server, tải nhanh, ít JS gửi xuống client.</li>
+  <li><strong>Server Actions</strong> cho thao tác dữ liệu (thay vì API route truyền thống) — gọn, có sẵn bảo vệ CSRF.</li>
+  <li><strong>ISR</strong> (Incremental Static Regeneration) + revalidate — trang tĩnh nhanh, tự cập nhật khi admin sửa.</li>
+  <li><strong>CMS nội dung</strong> — text/ảnh trang chủ &amp; giới thiệu lưu trong DB, có fallback mặc định.</li>
+</ul>
+<h3>Bảo mật</h3>
+<ul>
+  <li><strong>Phân quyền (RBAC):</strong> USER / STAFF / ADMIN; mọi action admin kiểm tra quyền.</li>
+  <li><strong>Validate đầu vào</strong> bằng Zod ở mọi form &amp; action.</li>
+  <li><strong>Rate limit</strong> các endpoint nhạy cảm; <strong>khoá tài khoản</strong> chặn đăng nhập.</li>
+  <li><strong>Security headers</strong> (CSP, HSTS, X-Frame-Options...) + HTTPS bắt buộc.</li>
+  <li><strong>Sanitize HTML</strong> khi hiển thị nội dung blog.</li>
+  <li>Tuân thủ <strong>Nghị định 13/2023/NĐ-CP</strong> về bảo vệ dữ liệu cá nhân.</li>
+</ul>
+
+<!-- ==================== 8. SEO ==================== -->
+<h2 id="seo">8. SEO &amp; hiệu năng</h2>
+<ul>
+  <li>Metadata động cho từng trang (title, description, Open Graph).</li>
+  <li><code>sitemap.xml</code> + <code>robots.txt</code> tự sinh.</li>
+  <li>Dữ liệu có cấu trúc <strong>Schema.org / JSON-LD</strong> (Organization, Product...).</li>
+  <li>Tối ưu ảnh qua <code>next/image</code>, lazy-load, định dạng hiện đại.</li>
+  <li>URL thân thiện (slug tiếng Việt không dấu), tốc độ tải tối ưu nhờ SSR/ISR + CDN.</li>
+</ul>
+
+<!-- ==================== 9. DEPLOY ==================== -->
+<h2 id="deploy">9. Triển khai</h2>
+<table>
+  <thead><tr><th>Hạng mục</th><th>Nền tảng</th></tr></thead>
+  <tbody>
+    <tr><td>Hosting</td><td><strong>Vercel</strong> (region Singapore) — auto-deploy từ GitHub.</td></tr>
+    <tr><td>Database</td><td><strong>Supabase</strong> (PostgreSQL quản lý, có backup).</td></tr>
+    <tr><td>Ảnh / CDN</td><td>Cloudinary + Vercel Edge Network.</td></tr>
+    <tr><td>Tên miền</td><td><code>lavipco.tech</code> (HTTPS, SSL tự động).</td></tr>
+    <tr><td>Giám sát</td><td>Sentry + Vercel Analytics + UptimeRobot.</td></tr>
+  </tbody>
+</table>
+<div class="alert success">
+  <strong>✓ Vận hành liên tục</strong>
+  Mỗi lần cập nhật code được build &amp; kiểm tra tự động trước khi lên production; nếu build lỗi, phiên bản đang chạy vẫn được giữ nguyên — website không gián đoạn.
+</div>
+
+</main>
+</div>
+
+<footer>
+  <p>🏛️ Giới thiệu Website — <strong>LAVIPCO</strong> (Công ty TNHH Kỹ Nghệ Lâm Việt Phát)</p>
+  <p>Tài liệu nội bộ · Cập nhật tháng 5/2026</p>
+</footer>
+
+<script>
+  document.querySelectorAll('aside a[href^="#"]').forEach(link => {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        if (window.innerWidth < 900) {
+          document.querySelector('aside').style.display = 'none';
+        }
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
