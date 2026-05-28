@@ -1186,6 +1186,92 @@ Hãy:
 
 ---
 
+# GIAI ĐOẠN 7 — DEPLOY, VẬN HÀNH & AI COPILOT
+
+> Bộ prompt cho các tác vụ deploy production, tài liệu vận hành và tích hợp AI.
+> Các prompt này yêu cầu Claude Code phối hợp với Lam (Lam làm các bước trên
+> dashboard bên thứ ba: Supabase, Vercel, Cloudflare, Google Cloud, Cloudinary...).
+
+---
+
+## Prompt 7.1 — Soạn hướng dẫn deploy chi tiết
+
+Soạn file `DEPLOY.md` hướng dẫn deploy dự án LAVIPCO lên Vercel + database Supabase/Neon (region Singapore), DNS qua Cloudflare hoặc registrar.
+
+Yêu cầu nội dung chia 8 bước, mỗi bước có lệnh cụ thể + "screenshot điểm":
+1. Tạo database production (Supabase/Neon) + lấy connection string (direct + pooler)
+2. Migrate + seed prod (`prisma migrate deploy`, `db:seed:prod`)
+3. Import GitHub repo vào Vercel + cấu hình toàn bộ env (bảng env đầy đủ)
+4. Custom domain + DNS record (A apex + CNAME www) + SSL
+5. Post-deploy config: VNPay return URL, Google OAuth redirect URI, Resend domain verify, NEXT_PUBLIC_SITE_URL
+6. Monitoring: Vercel Analytics + Sentry (optional) + UptimeRobot
+7. CI/CD: auto-deploy, preview deploy cho PR, branch protection GitHub
+8. Smoke test 6 flow (trang chủ, auth, COD, VNPay, admin, SEO)
+
+Bổ sung: bảng troubleshooting lỗi thường gặp, hướng dẫn backup/restore database.
+
+Cập nhật kèm:
+- `package.json`: thêm `postinstall: prisma generate` + build chain `prisma generate && next build` + script `db:seed:prod` (đọc trực tiếp env, không dùng dotenv-cli)
+- `vercel.json`: pin region `sin1`, buildCommand
+- `.env.example`: bổ sung mọi env mới (Upstash, GA, GTM)
+
+---
+
+## Prompt 7.2 — Thực thi deploy từng bước (interactive)
+
+Thực hiện deploy theo `DEPLOY.md`. Lưu ý: đây là tác vụ phối hợp — Claude KHÔNG tự đăng nhập được Supabase/Vercel/Cloudflare, mà phải:
+- Hướng dẫn Lam từng action trên dashboard bên thứ ba (kèm screenshot điểm)
+- Chạy giúp lệnh local: `prisma migrate deploy`, `prisma db seed`, test connection, push GitHub, generate `AUTH_SECRET`
+- Verify config sau mỗi bước, debug lỗi build Vercel
+
+Hỏi Lam đang có account/credential nào (GitHub, Supabase, Vercel, domain) và bắt đầu từ bước phù hợp.
+
+**Các lỗi deploy thực tế đã gặp + cách xử lý** (ghi lại để tái sử dụng):
+- `tenant/user ... not found`: pooler URL sai region → lấy đúng URL từ Supabase "Connect" (chú ý region thật, vd ap-southeast-2 chứ không phải ap-southeast-1)
+- `prepared statement "s0" already exists`: thiếu `?pgbouncer=true` trong pooler URL → thêm `?pgbouncer=true&connection_limit=1`
+- `connection pool timeout` khi build pre-render `/admin/dashboard`: admin pages không nên ISR → thêm `export const dynamic = "force-dynamic"`
+- `EPERM rename query_engine.dll` (Windows local): `rm -rf node_modules/.prisma` rồi build lại
+
+Sau khi domain valid: update `AUTH_URL` + `NEXT_PUBLIC_SITE_URL` + `VNPAY_RETURN_URL` thành domain prod → redeploy.
+
+---
+
+## Prompt 7.3 — Trang hướng dẫn sử dụng Admin Panel
+
+Tạo `public/huongdan.html` — trang HTML standalone (không phụ thuộc framework) hướng dẫn quản trị viên + nhân viên sử dụng Admin Panel.
+
+Yêu cầu:
+- Truy cập qua `https://<domain>/huongdan.html`, có `<meta robots="noindex,nofollow">`
+- CSS inline (brand color #0B5FA5), sidebar TOC sticky, responsive mobile + nút toggle TOC
+- 14 sections: Đăng nhập, Đổi mật khẩu, Dashboard, Sản phẩm (CRUD + 7 card + status DRAFT/ACTIVE/ARCHIVED), Đơn hàng (timeline + flow xử lý + cancel/refund), Khách hàng (tag + lock), Dự án, Dịch vụ (process steps), Blog (Tiptap + tags), Coupons, Tin nhắn (reply + bulk), Settings 7 tab, Mẹo & lưu ý, FAQ
+- Component: alert color-coded (tip/warn/danger/success), bảng so sánh, numbered steps (CSS counter), badge status, code snippet inline
+- Smooth scroll cho anchor link
+
+Văn phong: rõ ràng, từng bước, nhấn mạnh các lưu ý quan trọng (status mặc định DRAFT, không xoá được sản phẩm đã có trong đơn, lock account xoá session...).
+
+---
+
+## Prompt 7.4 — AI Admin Copilot (Claude API)
+
+Bổ sung tính năng dùng Claude API sinh nội dung trong các form admin (nội bộ, admin duyệt trước khi áp dụng).
+
+**Kiến trúc:**
+- `src/lib/ai/index.ts`: `callClaude()` gọi Messages API qua `fetch` REST (KHÔNG dùng SDK để tránh thêm dependency). `AI_ENABLED` check `ANTHROPIC_API_KEY`. Map lỗi 401/429/400 sang message tiếng Việt. Timeout 60s. Model mặc định Haiku 4.5 (env `ANTHROPIC_MODEL`).
+- `src/lib/ai/prompts.ts`: `buildPrompt(ctx)` cho từng `AIContentType` (product-description/short/seo, blog-content/excerpt/seo, service-description/short, project-summary/description). System prompt CHỐNG HALLUCINATION: cấm bịa thông số kỹ thuật khi thiếu data.
+- `src/lib/actions/ai-content.ts`: Server Action `generateContent()` require ADMIN + rate limit (chống đốt credit). `isAIEnabled()` cho Server Component check.
+- `src/components/admin/shared/AIGenerateButton.tsx`: nút "✨ AI tạo {label}" + preview modal (admin đọc/sửa → "Dùng nội dung này" hoặc "Tạo lại"). Tự ẩn khi `aiEnabled=false`.
+
+**Tích hợp:** thêm prop `aiEnabled` vào 4 form (Product, Blog, Service, Project) + nút ✨ cạnh các field mô tả/tóm tắt/SEO. Các page new/[id] truyền `await isAIEnabled()` xuống form.
+
+**Ràng buộc:**
+- Defensive: thiếu `ANTHROPIC_API_KEY` → nút tự ẩn, app không crash
+- AI chỉ HỖ TRỢ — admin chịu trách nhiệm kiểm duyệt nội dung cuối, KHÔNG bao giờ tự ghi đè field mà luôn qua preview modal
+- Cập nhật `.env.example` (`ANTHROPIC_API_KEY`, `ANTHROPIC_MODEL`) + CLAUDE.md (section AI Admin Copilot)
+
+**Mở rộng (giai đoạn sau):** chatbot tư vấn sản phẩm (RAG trên catalog), trợ lý ước lượng báo giá B2B, phân loại + draft reply tin nhắn liên hệ.
+
+---
+
 # MẸO VIẾT PROMPT HIỆU QUẢ
 
 Khi tự viết prompt cho Claude Code (ngoài bộ mẫu này), Lam tham khảo các nguyên tắc sau:
