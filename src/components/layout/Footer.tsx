@@ -4,13 +4,16 @@ import { Phone, Mail, MapPin } from "lucide-react";
 import { Container } from "@/components/layout/Container";
 import { BrandLogo } from "@/components/common/BrandLogo";
 import { FOOTER_NAV, SITE_CONFIG } from "@/lib/constants";
+import { getSiteContact } from "@/lib/site-settings";
 
 /**
  * Footer - Server Component.
  * 4 cột: Về LAVIPCO | Liên kết nhanh | Hỗ trợ | Liên hệ
+ * Thông tin liên hệ lấy từ admin Settings (fallback SITE_CONFIG).
  */
-export function Footer() {
+export async function Footer() {
   const year = new Date().getFullYear();
+  const contact = await getSiteContact();
 
   return (
     <footer className="mt-16 border-t bg-brand-dark text-white/80">
@@ -33,23 +36,23 @@ export function Footer() {
 
             {/* Social icons */}
             <div className="flex items-center gap-2 pt-2">
-              {SITE_CONFIG.social.facebook && (
+              {contact.social.facebook && (
                 <SocialLink
-                  href={SITE_CONFIG.social.facebook}
+                  href={contact.social.facebook}
                   label="Facebook"
                   icon={<FacebookIcon className="h-4 w-4" />}
                 />
               )}
-              {SITE_CONFIG.social.zalo && (
+              {contact.social.zalo && (
                 <SocialLink
-                  href={SITE_CONFIG.social.zalo}
+                  href={contact.social.zalo}
                   label="Zalo"
                   icon={<ZaloIcon className="h-4 w-4" />}
                 />
               )}
-              {SITE_CONFIG.social.youtube && (
+              {contact.social.youtube && (
                 <SocialLink
-                  href={SITE_CONFIG.social.youtube}
+                  href={contact.social.youtube}
                   label="YouTube"
                   icon={<YoutubeIcon className="h-4 w-4" />}
                 />
@@ -81,38 +84,38 @@ export function Footer() {
               Liên hệ
             </h3>
             <ul className="space-y-2.5 text-sm">
-              {SITE_CONFIG.address && (
+              {contact.address && (
                 <li className="flex items-start gap-2">
                   <MapPin className="mt-0.5 h-4 w-4 shrink-0 text-brand-accent" />
-                  <span>{SITE_CONFIG.address}</span>
+                  <span>{contact.address}</span>
                 </li>
               )}
-              {SITE_CONFIG.hotline && (
+              {contact.hotline && (
                 <li className="flex items-center gap-2">
                   <Phone className="h-4 w-4 shrink-0 text-brand-accent" />
                   <a
-                    href={`tel:${SITE_CONFIG.hotline.replace(/\s/g, "")}`}
+                    href={`tel:${contact.hotline.replace(/\s/g, "")}`}
                     className="hover:text-white"
                   >
-                    {SITE_CONFIG.hotline}
+                    {contact.hotline}
                   </a>
                 </li>
               )}
-              {SITE_CONFIG.email && (
+              {contact.email && (
                 <li className="flex items-center gap-2">
                   <Mail className="h-4 w-4 shrink-0 text-brand-accent" />
                   <a
-                    href={`mailto:${SITE_CONFIG.email}`}
+                    href={`mailto:${contact.email}`}
                     className="hover:text-white"
                   >
-                    {SITE_CONFIG.email}
+                    {contact.email}
                   </a>
                 </li>
               )}
-              {SITE_CONFIG.taxCode && (
-                <li className="text-xs text-white/60">MST: {SITE_CONFIG.taxCode}</li>
+              {contact.taxCode && (
+                <li className="text-xs text-white/60">MST: {contact.taxCode}</li>
               )}
-              <li className="text-xs text-white/60">{SITE_CONFIG.workingHours}</li>
+              <li className="text-xs text-white/60">{contact.workingHours}</li>
             </ul>
           </div>
         </div>

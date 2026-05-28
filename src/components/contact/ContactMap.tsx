@@ -1,6 +1,7 @@
 import { Container } from "@/components/layout/Container";
 import { Badge } from "@/components/ui/badge";
 import { SITE_CONFIG } from "@/lib/constants";
+import { getSiteContact } from "@/lib/site-settings";
 
 /**
  * Google Maps embed responsive 16:9.
@@ -8,9 +9,10 @@ import { SITE_CONFIG } from "@/lib/constants";
  * Dùng URL search (không cần API key). Khi production cần độ chính xác cao
  * + style hơn, chuyển sang Maps Embed API và cấu hình NEXT_PUBLIC_GOOGLE_MAPS_API_KEY.
  */
-export function ContactMap() {
-  // Fallback khi SITE_CONFIG.address rỗng
-  const query = SITE_CONFIG.address || "TP. Hồ Chí Minh, Việt Nam";
+export async function ContactMap() {
+  // Địa chỉ lấy từ admin Settings, fallback HCM khi chưa điền
+  const { address } = await getSiteContact();
+  const query = address || "TP. Hồ Chí Minh, Việt Nam";
   const embedSrc = `https://www.google.com/maps?q=${encodeURIComponent(query)}&output=embed`;
 
   return (

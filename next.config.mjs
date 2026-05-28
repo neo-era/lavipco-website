@@ -26,7 +26,7 @@ const cspDirectives = [
   "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://www.google-analytics.com",
   "font-src 'self' data:",
   "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.cloudinary.com https://sandbox.vnpayment.vn https://*.ingest.us.sentry.io",
-  "frame-src 'self' https://www.googletagmanager.com",
+  "frame-src 'self' https://www.googletagmanager.com https://www.google.com https://maps.google.com",
   "form-action 'self' https://sandbox.vnpayment.vn https://merchant.vnpay.vn",
   "base-uri 'self'",
   "object-src 'none'",

@@ -1,12 +1,16 @@
 import { Building2, MapPin, Phone, Mail, Clock, BadgeCheck } from "lucide-react";
 
 import { SITE_CONFIG } from "@/lib/constants";
+import { getSiteContact } from "@/lib/site-settings";
 
 /**
  * Cột trái trang Liên hệ - thông tin công ty.
- * Field nào rỗng (chưa điền trong SITE_CONFIG) thì ẩn dòng tương ứng.
+ * Hotline/email/địa chỉ lấy từ admin Settings (fallback SITE_CONFIG).
+ * Field nào rỗng thì ẩn dòng tương ứng.
  */
-export function ContactInfo() {
+export async function ContactInfo() {
+  const contact = await getSiteContact();
+
   return (
     <div className="space-y-6">
       <div>
@@ -21,71 +25,71 @@ export function ContactInfo() {
           {SITE_CONFIG.fullName}
         </InfoRow>
 
-        {SITE_CONFIG.address && (
+        {contact.address && (
           <InfoRow Icon={MapPin} label="Địa chỉ">
-            {SITE_CONFIG.address}
+            {contact.address}
           </InfoRow>
         )}
 
-        {SITE_CONFIG.hotline && (
+        {contact.hotline && (
           <InfoRow Icon={Phone} label="Hotline">
             <a
-              href={`tel:${SITE_CONFIG.hotline.replace(/\s/g, "")}`}
+              href={`tel:${contact.hotline.replace(/\s/g, "")}`}
               className="font-medium text-brand-primary hover:underline"
             >
-              {SITE_CONFIG.hotline}
+              {contact.hotline}
             </a>
           </InfoRow>
         )}
 
-        {SITE_CONFIG.email && (
+        {contact.email && (
           <InfoRow Icon={Mail} label="Email">
             <a
-              href={`mailto:${SITE_CONFIG.email}`}
+              href={`mailto:${contact.email}`}
               className="font-medium text-brand-primary hover:underline"
             >
-              {SITE_CONFIG.email}
+              {contact.email}
             </a>
           </InfoRow>
         )}
 
         <InfoRow Icon={Clock} label="Giờ làm việc">
-          {SITE_CONFIG.workingHours}
+          {contact.workingHours}
         </InfoRow>
 
-        {SITE_CONFIG.taxCode && (
+        {contact.taxCode && (
           <InfoRow Icon={BadgeCheck} label="Mã số thuế">
-            {SITE_CONFIG.taxCode}
+            {contact.taxCode}
           </InfoRow>
         )}
       </ul>
 
       {/* Social */}
-      {(SITE_CONFIG.social.facebook ||
-        SITE_CONFIG.social.zalo ||
-        SITE_CONFIG.social.youtube) && (
+      {(contact.social.facebook ||
+        contact.social.zalo ||
+        contact.social.youtube) && (
         <div className="border-t pt-6">
           <p className="mb-3 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
             Kết nối với chúng tôi
           </p>
           <div className="flex items-center gap-2">
-            {SITE_CONFIG.social.facebook && (
+            {contact.social.facebook && (
               <SocialBubble
-                href={SITE_CONFIG.social.facebook}
+                href={contact.social.facebook}
                 label="Facebook"
                 icon={<FacebookIcon className="h-4 w-4" />}
               />
             )}
-            {SITE_CONFIG.social.zalo && (
+            {contact.social.zalo && (
               <SocialBubble
-                href={SITE_CONFIG.social.zalo}
+                href={contact.social.zalo}
                 label="Zalo"
                 icon={<ZaloIcon className="h-4 w-4" />}
               />
             )}
-            {SITE_CONFIG.social.youtube && (
+            {contact.social.youtube && (
               <SocialBubble
-                href={SITE_CONFIG.social.youtube}
+                href={contact.social.youtube}
                 label="YouTube"
                 icon={<YoutubeIcon className="h-4 w-4" />}
               />
