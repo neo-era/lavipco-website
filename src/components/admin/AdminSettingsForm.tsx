@@ -344,12 +344,23 @@ export function AdminSettingsForm({ defaultValues }: Props) {
                       <FormControl>
                         <Textarea
                           {...field}
-                          rows={3}
-                          placeholder="Ngân hàng: ...\nSố TK: ...\nChủ TK: ..."
+                          rows={8}
+                          placeholder={
+                            "Tài khoản 1:\n" +
+                            "Ngân hàng: Vietcombank - CN ...\n" +
+                            "Số TK: 0123456789\n" +
+                            "Chủ TK: CONG TY TNHH KY NGHE LAM VIET PHAT\n\n" +
+                            "Tài khoản 2:\n" +
+                            "Ngân hàng: ...\n" +
+                            "Số TK: ...\n" +
+                            "Chủ TK: ..."
+                          }
                         />
                       </FormControl>
                       <FormDescription className="text-xs">
                         Hiển thị ở checkout khi khách chọn Chuyển khoản ngân hàng.
+                        Có thể nhập nhiều tài khoản — mỗi dòng xuống dòng sẽ giữ
+                        nguyên khi hiển thị cho khách.
                       </FormDescription>
                       <FormMessage />
                     </FormItem>
