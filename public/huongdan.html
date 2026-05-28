@@ -1,0 +1,1023 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<meta name="robots" content="noindex, nofollow" />
+<title>Hướng dẫn sử dụng Admin Panel - LAVIPCO</title>
+<style>
+  :root {
+    --brand: #0B5FA5;
+    --brand-light: #eff6ff;
+    --accent: #F59E0B;
+    --text: #1f2937;
+    --muted: #6b7280;
+    --border: #e5e7eb;
+    --bg: #ffffff;
+    --bg-soft: #f9fafb;
+    --code-bg: #f3f4f6;
+    --success: #16a34a;
+    --warning: #f59e0b;
+    --danger: #dc2626;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+    color: var(--text);
+    background: var(--bg);
+    line-height: 1.65;
+    font-size: 15px;
+  }
+  /* Header */
+  header {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    background: var(--brand);
+    color: white;
+    padding: 14px 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+  }
+  header h1 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  header .subtitle {
+    font-size: 12px;
+    opacity: 0.85;
+    margin-top: 2px;
+  }
+  /* Layout */
+  .layout {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    max-width: 1400px;
+    margin: 0 auto;
+    min-height: calc(100vh - 60px);
+  }
+  @media (max-width: 900px) {
+    .layout { grid-template-columns: 1fr; }
+    aside { display: none; }
+  }
+  aside {
+    border-right: 1px solid var(--border);
+    background: var(--bg-soft);
+    padding: 24px 16px;
+    height: calc(100vh - 60px);
+    overflow-y: auto;
+    position: sticky;
+    top: 60px;
+  }
+  aside h3 {
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    color: var(--muted);
+    margin: 16px 0 8px;
+    padding: 0 8px;
+  }
+  aside ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+  }
+  aside a {
+    display: block;
+    padding: 6px 12px;
+    text-decoration: none;
+    color: var(--text);
+    border-radius: 6px;
+    font-size: 13.5px;
+    transition: background 0.15s;
+  }
+  aside a:hover {
+    background: white;
+    color: var(--brand);
+  }
+  main {
+    padding: 32px 40px;
+    max-width: 900px;
+  }
+  @media (max-width: 900px) { main { padding: 20px; } }
+  /* Typography */
+  h2 {
+    color: var(--brand);
+    border-bottom: 2px solid var(--brand-light);
+    padding-bottom: 8px;
+    margin-top: 48px;
+    margin-bottom: 16px;
+    font-size: 24px;
+    scroll-margin-top: 80px;
+  }
+  h2:first-child { margin-top: 0; }
+  h3 {
+    margin-top: 28px;
+    margin-bottom: 8px;
+    font-size: 18px;
+    scroll-margin-top: 80px;
+  }
+  h4 {
+    margin-top: 20px;
+    margin-bottom: 6px;
+    font-size: 15px;
+    color: var(--brand);
+  }
+  p { margin: 8px 0; }
+  ul, ol { padding-left: 24px; margin: 8px 0; }
+  li { margin: 4px 0; }
+  /* Inline code */
+  code {
+    background: var(--code-bg);
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-family: "Cascadia Code", Monaco, Consolas, monospace;
+    font-size: 13px;
+    color: #be123c;
+  }
+  /* Code blocks */
+  pre {
+    background: #1e293b;
+    color: #e2e8f0;
+    padding: 14px 16px;
+    border-radius: 8px;
+    overflow-x: auto;
+    font-size: 13px;
+    line-height: 1.5;
+  }
+  pre code {
+    background: transparent;
+    color: inherit;
+    padding: 0;
+  }
+  /* Alerts */
+  .alert {
+    border-left: 4px solid;
+    padding: 12px 16px;
+    margin: 16px 0;
+    border-radius: 0 6px 6px 0;
+    font-size: 14px;
+  }
+  .alert.tip {
+    border-color: var(--brand);
+    background: var(--brand-light);
+  }
+  .alert.warn {
+    border-color: var(--warning);
+    background: #fef3c7;
+  }
+  .alert.danger {
+    border-color: var(--danger);
+    background: #fee2e2;
+  }
+  .alert.success {
+    border-color: var(--success);
+    background: #dcfce7;
+  }
+  .alert strong { display: block; margin-bottom: 4px; }
+  /* Tables */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 12px 0;
+    font-size: 14px;
+  }
+  th, td {
+    border: 1px solid var(--border);
+    padding: 8px 12px;
+    text-align: left;
+  }
+  th {
+    background: var(--bg-soft);
+    font-weight: 600;
+  }
+  /* Steps */
+  .steps {
+    counter-reset: step;
+    list-style: none;
+    padding-left: 0;
+  }
+  .steps > li {
+    position: relative;
+    padding: 8px 0 8px 44px;
+    margin: 12px 0;
+    counter-increment: step;
+  }
+  .steps > li::before {
+    content: counter(step);
+    position: absolute;
+    left: 0;
+    top: 8px;
+    width: 28px;
+    height: 28px;
+    background: var(--brand);
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 13px;
+  }
+  /* Badge */
+  .badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 11px;
+    font-weight: 600;
+    vertical-align: middle;
+  }
+  .badge.brand { background: var(--brand); color: white; }
+  .badge.accent { background: var(--accent); color: white; }
+  .badge.success { background: var(--success); color: white; }
+  .badge.muted { background: var(--muted); color: white; }
+  /* Footer */
+  footer {
+    text-align: center;
+    padding: 32px 16px;
+    color: var(--muted);
+    font-size: 13px;
+    border-top: 1px solid var(--border);
+    margin-top: 60px;
+  }
+  /* Anchor link */
+  a.link { color: var(--brand); }
+  /* Mobile TOC toggle */
+  .mobile-toc-toggle {
+    display: none;
+    width: 100%;
+    background: var(--bg-soft);
+    border: 1px solid var(--border);
+    padding: 10px 16px;
+    margin-bottom: 16px;
+    cursor: pointer;
+    text-align: left;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+  }
+  .mobile-toc-toggle::after {
+    content: "▼";
+    float: right;
+    color: var(--muted);
+  }
+  @media (max-width: 900px) {
+    .mobile-toc-toggle { display: block; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <h1>📘 Hướng dẫn sử dụng Admin Panel</h1>
+  <div class="subtitle">LAVIPCO Website — Dành cho Quản trị viên và Nhân viên</div>
+</header>
+
+<div class="layout">
+
+<aside>
+  <h3>Mục lục</h3>
+
+  <h3>🚀 Bắt đầu</h3>
+  <ul>
+    <li><a href="#login">1. Đăng nhập</a></li>
+    <li><a href="#change-password">2. Đổi mật khẩu</a></li>
+    <li><a href="#dashboard">3. Dashboard tổng quan</a></li>
+  </ul>
+
+  <h3>📦 Quản lý nội dung</h3>
+  <ul>
+    <li><a href="#products">4. Sản phẩm</a></li>
+    <li><a href="#orders">5. Đơn hàng</a></li>
+    <li><a href="#customers">6. Khách hàng</a></li>
+    <li><a href="#projects">7. Dự án</a></li>
+    <li><a href="#services">8. Dịch vụ</a></li>
+    <li><a href="#blog">9. Tin tức (Blog)</a></li>
+    <li><a href="#coupons">10. Mã giảm giá</a></li>
+    <li><a href="#messages">11. Tin nhắn liên hệ</a></li>
+  </ul>
+
+  <h3>⚙️ Cấu hình</h3>
+  <ul>
+    <li><a href="#settings">12. Cài đặt hệ thống</a></li>
+  </ul>
+
+  <h3>💡 Khác</h3>
+  <ul>
+    <li><a href="#tips">13. Mẹo và lưu ý</a></li>
+    <li><a href="#faq">14. FAQ</a></li>
+  </ul>
+</aside>
+
+<main>
+
+<button class="mobile-toc-toggle" onclick="document.querySelector('aside').style.display = document.querySelector('aside').style.display === 'block' ? 'none' : 'block';">📑 Mục lục</button>
+
+<p>Trang này hướng dẫn cách sử dụng Admin Panel của website LAVIPCO. Đối tượng: <strong>quản trị viên</strong> và <strong>nhân viên</strong> được cấp quyền ADMIN/STAFF.</p>
+
+<div class="alert tip">
+  <strong>💡 URL Admin Panel:</strong>
+  <code>https://www.lavipco.tech/admin</code> (yêu cầu đăng nhập với role ADMIN)
+</div>
+
+<!-- ==================== 1. LOGIN ==================== -->
+<h2 id="login">1. Đăng nhập</h2>
+
+<ol class="steps">
+  <li>
+    <strong>Truy cập:</strong> <code>https://www.lavipco.tech/sign-in</code>
+  </li>
+  <li>
+    <strong>Nhập thông tin:</strong>
+    <ul>
+      <li>Email: <code>admin@lavipco.com.vn</code> (hoặc email admin được cấp)</li>
+      <li>Mật khẩu: được cấp bởi đội kỹ thuật khi setup</li>
+    </ul>
+  </li>
+  <li>
+    <strong>Bấm "Đăng nhập"</strong> → sau khi thành công, hệ thống chuyển về trang chủ.
+  </li>
+  <li>
+    Truy cập <code>/admin</code> hoặc bấm avatar góc phải header → <strong>"Quản trị"</strong> để vào Admin Panel.
+  </li>
+</ol>
+
+<div class="alert warn">
+  <strong>⚠️ Bảo mật:</strong> Sau 5 lần nhập sai mật khẩu trong 15 phút, IP của bạn sẽ bị tạm chặn. Đợi 15 phút hoặc liên hệ kỹ thuật.
+</div>
+
+<!-- ==================== 2. CHANGE PASSWORD ==================== -->
+<h2 id="change-password">2. Đổi mật khẩu</h2>
+
+<p><strong>Bắt buộc đổi mật khẩu mặc định ngay sau lần đăng nhập đầu tiên.</strong></p>
+
+<ol class="steps">
+  <li>Bấm avatar góc phải header → <strong>"Tài khoản"</strong></li>
+  <li>Sidebar trái → <strong>"Bảo mật"</strong> (hoặc URL: <code>/account/security</code>)</li>
+  <li>Điền form:
+    <ul>
+      <li>Mật khẩu hiện tại: <code>Admin@123</code> (mặc định ban đầu)</li>
+      <li>Mật khẩu mới: tối thiểu 8 ký tự, có chữ và số</li>
+      <li>Xác nhận mật khẩu mới</li>
+    </ul>
+  </li>
+  <li>Bấm <strong>"Đổi mật khẩu"</strong> → toast xác nhận thành công.</li>
+</ol>
+
+<div class="alert tip">
+  <strong>💡 Yêu cầu mật khẩu:</strong>
+  <ul>
+    <li>Tối thiểu 8 ký tự</li>
+    <li>Có ít nhất 1 chữ cái</li>
+    <li>Có ít nhất 1 chữ số</li>
+    <li>Khuyến nghị: 12+ ký tự, có HOA/thường/số/ký tự đặc biệt</li>
+  </ul>
+</div>
+
+<!-- ==================== 3. DASHBOARD ==================== -->
+<h2 id="dashboard">3. Dashboard tổng quan</h2>
+
+<p>URL: <code>/admin</code> hoặc <code>/admin/dashboard</code></p>
+
+<h3>Các thành phần</h3>
+
+<table>
+  <thead>
+    <tr><th>Khu vực</th><th>Hiển thị</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>4 thẻ thống kê</strong></td><td>Doanh thu tháng, đơn hàng tháng, khách hàng mới, sản phẩm đang bán</td></tr>
+    <tr><td><strong>Biểu đồ Doanh thu 12 tháng</strong></td><td>Đường biểu diễn tổng doanh thu mỗi tháng (chỉ đơn PAID)</td></tr>
+    <tr><td><strong>Biểu đồ Đơn theo trạng thái</strong></td><td>Pie chart phân loại PENDING / CONFIRMED / PROCESSING / COMPLETED / CANCELLED</td></tr>
+    <tr><td><strong>Top 5 sản phẩm bán chạy</strong></td><td>Theo số lượng bán trong tháng (chỉ đơn PAID)</td></tr>
+    <tr><td><strong>Top 5 khách hàng</strong></td><td>Theo tổng chi tiêu all-time (chỉ đơn PAID)</td></tr>
+    <tr><td><strong>10 đơn hàng mới nhất</strong></td><td>Link nhanh đến chi tiết đơn</td></tr>
+    <tr><td><strong>Tin nhắn chưa đọc</strong></td><td>5 tin liên hệ status=NEW, link đến chi tiết</td></tr>
+  </tbody>
+</table>
+
+<!-- ==================== 4. PRODUCTS ==================== -->
+<h2 id="products">4. Quản lý Sản phẩm</h2>
+
+<p>URL: <code>/admin/products</code></p>
+
+<h3>4.1. Thêm sản phẩm mới</h3>
+
+<ol class="steps">
+  <li>Bấm nút <strong>"+ Thêm sản phẩm"</strong> (góc phải trên).</li>
+  <li>Điền form 7 card (có thể skip một số field optional):
+    <ul>
+      <li><strong>Card 1 - Thông tin cơ bản:</strong> tên, slug (tự sinh), thương hiệu, danh mục, mô tả ngắn, mô tả chi tiết (hỗ trợ Markdown)</li>
+      <li><strong>Card 2 - Giá và kho:</strong> bật "Liên hệ báo giá" nếu sản phẩm dự án; nếu không, điền giá cơ bản (VND)</li>
+      <li><strong>Card 3 - Hình ảnh:</strong> kéo thả tối đa 20 ảnh, ảnh đầu là ảnh bìa (click ⭐ để đổi)</li>
+      <li><strong>Card 4 - Thông số kỹ thuật:</strong> bấm "+ Thêm thông số" cho từng dòng (Công suất, Điện áp, IP, ...)</li>
+      <li><strong>Card 5 - Biến thể:</strong> bật khi có nhiều phiên bản (màu, công suất). Định nghĩa thuộc tính → bấm "Sinh biến thể từ tổ hợp" → điền SKU/giá/tồn kho từng variant</li>
+      <li><strong>Card 6 - SEO:</strong> meta title/description (tự fill từ tên nếu trống)</li>
+      <li><strong>Card 7 - Cấu hình:</strong> trạng thái (DRAFT/ACTIVE/ARCHIVED), nổi bật, URL catalogue PDF</li>
+    </ul>
+  </li>
+  <li>Bấm <strong>"Tạo sản phẩm"</strong> ở sticky bar dưới đáy.</li>
+</ol>
+
+<div class="alert warn">
+  <strong>⚠️ Lưu ý quan trọng về status:</strong>
+  <ul>
+    <li><span class="badge muted">DRAFT</span> - Nháp, KHÔNG hiển thị ở trang public</li>
+    <li><span class="badge success">ACTIVE</span> - Đang bán, hiển thị công khai</li>
+    <li><span class="badge muted">ARCHIVED</span> - Lưu trữ, ẩn khỏi catalog (nhưng giữ data đơn cũ)</li>
+  </ul>
+  Sau khi tạo, sản phẩm mặc định là DRAFT. Khi sẵn sàng public, đổi sang ACTIVE.
+</div>
+
+<h3>4.2. Sửa sản phẩm</h3>
+
+<ul>
+  <li>Click vào tên sản phẩm trong list → vào trang edit</li>
+  <li>Hoặc click icon ⋯ → <strong>"Chỉnh sửa"</strong></li>
+  <li>Form giống Card tạo mới, sửa xong bấm <strong>"Lưu thay đổi"</strong></li>
+</ul>
+
+<h3>4.3. Đổi trạng thái nhanh</h3>
+
+<p>Trong list, click icon ⋯ row sản phẩm:</p>
+<ul>
+  <li><strong>Đăng bán (ACTIVE)</strong> - publish ngay</li>
+  <li><strong>Nháp (DRAFT)</strong> - ẩn khỏi public</li>
+  <li><strong>Lưu trữ (ARCHIVED)</strong> - ẩn nhưng giữ data đơn</li>
+  <li><strong>Đánh dấu / Bỏ nổi bật</strong> - hiển thị trên trang chủ</li>
+</ul>
+
+<h3>4.4. Xoá sản phẩm</h3>
+
+<ul>
+  <li>Click ⋯ → <strong>"Xoá"</strong> → xác nhận dialog</li>
+</ul>
+
+<div class="alert danger">
+  <strong>🚫 Không thể xoá:</strong> sản phẩm/biến thể đã có trong đơn hàng. Hệ thống sẽ báo lỗi và gợi ý dùng <strong>ARCHIVED</strong> thay thế.
+</div>
+
+<h3>4.5. Bộ lọc + tìm kiếm</h3>
+
+<ul>
+  <li><strong>Search:</strong> tìm theo tên, SKU, thương hiệu</li>
+  <li><strong>Filter:</strong> danh mục, trạng thái, nổi bật</li>
+</ul>
+
+<!-- ==================== 5. ORDERS ==================== -->
+<h2 id="orders">5. Quản lý Đơn hàng</h2>
+
+<p>URL: <code>/admin/orders</code></p>
+
+<h3>5.1. Xem danh sách</h3>
+
+<p>Đầu trang có 4 stat card: tổng đơn, doanh thu, đơn chờ xử lý, đơn đã giao (trong khoảng filter hiện tại).</p>
+
+<p><strong>Bộ lọc:</strong></p>
+<ul>
+  <li>Search: mã đơn, email, SĐT, mã vận đơn</li>
+  <li>Khoảng thời gian (date picker)</li>
+  <li>Trạng thái đơn / Thanh toán / Vận chuyển / Phương thức thanh toán</li>
+</ul>
+
+<h3>5.2. Chi tiết đơn hàng</h3>
+
+<p>Click mã đơn (vd <code>DH202605260001</code>) → mở trang chi tiết 3 cột:</p>
+
+<h4>Cột trái (2/3 độ rộng):</h4>
+<ul>
+  <li><strong>Timeline:</strong> 5 bước (Đặt hàng → Xác nhận → Đóng gói → Vận chuyển → Hoàn thành)</li>
+  <li><strong>Sản phẩm:</strong> danh sách items với ảnh, SKU, qty, giá</li>
+  <li><strong>Tổng tiền:</strong> tạm tính + giảm giá + phí ship + hoàn tiền (nếu có)</li>
+  <li><strong>Ghi chú nội bộ:</strong> textarea, chỉ admin/staff thấy (khách KHÔNG xem được)</li>
+  <li><strong>Nhật ký hoạt động:</strong> audit trail mọi thay đổi (đổi status, hoàn tiền, ...) với timestamp + ai làm</li>
+</ul>
+
+<h4>Cột phải (1/3 độ rộng):</h4>
+<ul>
+  <li>Thông tin khách hàng (link xem profile)</li>
+  <li>Địa chỉ giao hàng</li>
+  <li>Thanh toán (method + status + mã giao dịch VNPay nếu có)</li>
+  <li>Vận chuyển (provider + tracking code)</li>
+  <li>Mã giảm giá (nếu có)</li>
+  <li><strong>Card Hành động</strong>: nơi thực hiện mọi thao tác</li>
+</ul>
+
+<h3>5.3. Card Hành động — flow xử lý đơn</h3>
+
+<h4>A. Đổi trạng thái đơn</h4>
+<ol>
+  <li>Chọn trạng thái mới từ dropdown (PENDING/CONFIRMED/PROCESSING/COMPLETED)</li>
+  <li>(Optional) Ghi chú gửi kèm cho khách</li>
+  <li>Bấm <strong>"Lưu trạng thái"</strong></li>
+  <li>Hệ thống tự gửi email thông báo cho khách + log vào audit trail</li>
+</ol>
+
+<h4>B. Cập nhật thanh toán</h4>
+<ul>
+  <li>PENDING → PAID khi khách chuyển khoản (verify với sao kê ngân hàng)</li>
+  <li>Điền mã giao dịch (VNPay TxnNo hoặc ref ngân hàng) nếu áp dụng</li>
+</ul>
+
+<h4>C. Vận chuyển</h4>
+<ol>
+  <li>Chọn đơn vị: GHN / GHTK / Viettel Post / J&amp;T / Khác</li>
+  <li>Nhập mã vận đơn (từ portal GHN/GHTK sau khi tạo đơn vận chuyển)</li>
+  <li>(Optional) Đổi shipping status nếu cần</li>
+  <li>Bấm <strong>"Lưu vận chuyển"</strong></li>
+  <li>Khi nhập mã vận đơn lần đầu, hệ thống tự gửi email báo khách kèm mã tracking</li>
+</ol>
+
+<h4>D. Huỷ đơn</h4>
+
+<div class="alert warn">
+  <strong>⚠️ Chỉ huỷ được khi orderStatus ∈ {PENDING, CONFIRMED, PROCESSING}.</strong> Đơn COMPLETED không huỷ được — phải xử lý hoàn trả thủ công với khách.
+</div>
+
+<ol>
+  <li>Bấm <strong>"Huỷ đơn (hoàn kho)"</strong></li>
+  <li>Nhập lý do huỷ (tối thiểu 5 ký tự) - hiển thị cho khách trong email + history</li>
+  <li>Bấm <strong>"Xác nhận huỷ"</strong></li>
+  <li>Tự động:
+    <ul>
+      <li>Hoàn lại tồn kho cho mọi sản phẩm trong đơn</li>
+      <li>Đổi orderStatus = CANCELLED</li>
+      <li>Gửi email báo khách</li>
+      <li>Log activity</li>
+    </ul>
+  </li>
+</ol>
+
+<h4>E. Hoàn tiền</h4>
+
+<div class="alert tip">
+  <strong>💡 Chỉ hoàn tiền được khi paymentStatus = PAID.</strong>
+</div>
+
+<ol>
+  <li>Bấm <strong>"Hoàn tiền"</strong></li>
+  <li>Điền số tiền hoàn (mặc định = tổng đơn, có thể nhập partial refund)</li>
+  <li>(Optional) Lý do</li>
+  <li>Bấm <strong>"Xác nhận hoàn tiền"</strong></li>
+  <li>Logic:
+    <ul>
+      <li>Đơn <strong>VNPay</strong> → hệ thống gọi VNPay Refund API tự động</li>
+      <li>Đơn <strong>COD/BANK_TRANSFER</strong> → chỉ mark REFUNDED + log; admin tự chuyển khoản hoàn cho khách qua banking</li>
+    </ul>
+  </li>
+</ol>
+
+<h3>5.4. In hoá đơn</h3>
+
+<p>Trên trang chi tiết, bấm <strong>"In hoá đơn"</strong> (icon máy in) → mở print preview của browser → in giấy hoặc save PDF.</p>
+
+<!-- ==================== 6. CUSTOMERS ==================== -->
+<h2 id="customers">6. Quản lý Khách hàng</h2>
+
+<p>URL: <code>/admin/customers</code></p>
+
+<h3>6.1. Danh sách + filter</h3>
+
+<ul>
+  <li>Search: tên, email, SĐT, tag</li>
+  <li>Filter: vai trò (USER/STAFF/ADMIN), trạng thái khoá</li>
+  <li>Mỗi row hiển thị: tên, email, SĐT, vai trò, tag, số đơn, chi tiêu</li>
+</ul>
+
+<h3>6.2. Chi tiết khách hàng</h3>
+
+<p>Click tên khách → trang detail 3 cột:</p>
+
+<h4>Cột trái:</h4>
+<ul>
+  <li>Thông tin liên hệ (email/SĐT/ngày đăng ký)</li>
+  <li>3 stat tile: tổng đơn / đơn đã thanh toán / tổng chi tiêu</li>
+  <li>Lịch sử 20 đơn hàng gần nhất</li>
+  <li>Sổ địa chỉ (nếu khách đã lưu)</li>
+</ul>
+
+<h4>Cột phải - Card hành động:</h4>
+
+<h5>📌 Tag khách hàng</h5>
+<ul>
+  <li>Bấm vào ô input → nhập tag (vd <code>VIP</code>, <code>B2B</code>, <code>Loyal</code>)</li>
+  <li>Hoặc chọn từ preset (VIP / B2B / Loyal / Wholesale / Distributor)</li>
+  <li>Tối đa 10 tag / khách</li>
+  <li>Bấm <strong>"Lưu"</strong> sau khi thay đổi</li>
+</ul>
+
+<h5>📝 Ghi chú nội bộ</h5>
+<ul>
+  <li>Textarea — chỉ admin/staff thấy</li>
+  <li>Ghi vd: "Khách công ty X, ưu tiên giao nhanh"</li>
+  <li>Tối đa 2000 ký tự</li>
+</ul>
+
+<h5>🔒 Khoá tài khoản</h5>
+
+<div class="alert warn">
+  <strong>⚠️ Khi khoá:</strong>
+  <ul>
+    <li>Khách KHÔNG đăng nhập được (cả email/password và Google OAuth)</li>
+    <li>Tất cả session đang mở của khách bị huỷ ngay</li>
+    <li>Đơn hàng + dữ liệu cá nhân vẫn giữ nguyên</li>
+    <li>KHÔNG khoá được tài khoản đang đăng nhập hoặc tài khoản ADMIN khác</li>
+  </ul>
+</div>
+
+<ol>
+  <li>Bấm <strong>"Khoá tài khoản"</strong> (button đỏ)</li>
+  <li>Xác nhận dialog</li>
+  <li>Khi cần mở lại → bấm <strong>"Mở khoá tài khoản"</strong> (button xanh)</li>
+</ol>
+
+<!-- ==================== 7. PROJECTS ==================== -->
+<h2 id="projects">7. Quản lý Dự án</h2>
+
+<p>URL: <code>/admin/projects</code></p>
+
+<p>Quản lý portfolio các dự án LAVIPCO đã thực hiện. Hiển thị ở <code>/projects</code> public.</p>
+
+<h3>7.1. Thêm dự án</h3>
+
+<ol class="steps">
+  <li>Bấm <strong>"+ Thêm dự án"</strong></li>
+  <li>Điền form 4 card:
+    <ul>
+      <li><strong>Card 1 - Cơ bản:</strong> tiêu đề, slug, tóm tắt, mô tả chi tiết</li>
+      <li><strong>Card 2 - Thông tin dự án:</strong> chủ đầu tư, địa điểm, năm, danh mục (enum), quy mô</li>
+      <li><strong>Card 3 - Hình ảnh + Video:</strong> tối đa 30 ảnh + video URL YouTube</li>
+      <li><strong>Card 4 - Cấu hình:</strong> nổi bật, thứ tự hiển thị</li>
+    </ul>
+  </li>
+  <li>Bấm <strong>"Tạo dự án"</strong></li>
+</ol>
+
+<p><strong>Danh mục (enum):</strong></p>
+<ul>
+  <li>TRAFFIC_LIGHT — Đèn tín hiệu giao thông</li>
+  <li>URBAN_LIGHTING — Chiếu sáng đô thị</li>
+  <li>LANDSCAPE_LIGHTING — Chiếu sáng cảnh quan</li>
+  <li>POWER_INFRASTRUCTURE — Hạ tầng điện</li>
+  <li>SMART_CITY — Smart City</li>
+  <li>OTHER — Khác</li>
+</ul>
+
+<!-- ==================== 8. SERVICES ==================== -->
+<h2 id="services">8. Quản lý Dịch vụ</h2>
+
+<p>URL: <code>/admin/services</code></p>
+
+<p>Dịch vụ kỹ thuật của LAVIPCO. Hiển thị ở <code>/services</code> public.</p>
+
+<h3>8.1. Form 4 card</h3>
+
+<ol>
+  <li><strong>Cơ bản:</strong> tên dịch vụ, slug, mô tả ngắn, mô tả chi tiết</li>
+  <li><strong>Hiển thị:</strong>
+    <ul>
+      <li>Icon: nhập tên Lucide icon (vd <code>Lightbulb</code>, <code>TrafficCone</code>) hoặc URL ảnh SVG</li>
+      <li>Giá: VND số nguyên, để trống = "Liên hệ báo giá"</li>
+      <li>Ảnh bìa: 1 ảnh duy nhất</li>
+    </ul>
+  </li>
+  <li><strong>Quy trình thực hiện:</strong>
+    <ul>
+      <li>Bấm <strong>"+ Thêm bước"</strong> cho từng bước trong quy trình</li>
+      <li>Mỗi bước có: tên (bắt buộc) + mô tả ngắn (optional)</li>
+      <li>Tối đa 20 bước</li>
+      <li>Hiển thị ở trang chi tiết dịch vụ thành numbered steps</li>
+    </ul>
+  </li>
+  <li><strong>Cấu hình:</strong> ẩn/hiện, thứ tự</li>
+</ol>
+
+<!-- ==================== 9. BLOG ==================== -->
+<h2 id="blog">9. Quản lý Tin tức (Blog)</h2>
+
+<p>URL: <code>/admin/blog</code></p>
+
+<h3>9.1. Thêm bài viết</h3>
+
+<ol class="steps">
+  <li>Bấm <strong>"+ Thêm bài viết"</strong></li>
+  <li>Điền form 3 card:
+    <ul>
+      <li><strong>Nội dung:</strong> tiêu đề, slug, tóm tắt (excerpt), nội dung qua <strong>Rich Text Editor (Tiptap)</strong></li>
+      <li><strong>Hiển thị:</strong> ảnh bìa (1 ảnh), tags (chips), thời gian đăng, switch "Đăng bài"</li>
+      <li><strong>SEO:</strong> meta title, meta description</li>
+    </ul>
+  </li>
+  <li>Bấm <strong>"Tạo bài viết"</strong></li>
+</ol>
+
+<h3>9.2. Rich Text Editor (Tiptap)</h3>
+
+<p>Toolbar hỗ trợ:</p>
+<ul>
+  <li>📝 Undo/Redo</li>
+  <li>📄 Đoạn văn / H2 / H3</li>
+  <li>**B** Bold / *I* Italic / ~~S~~ Strike / <code>code</code></li>
+  <li>• Bullet list / 1. Numbered list / ❝ Blockquote</li>
+  <li>Căn lề trái/giữa/phải</li>
+  <li>🔗 Link / 🖼 Image (paste URL)</li>
+</ul>
+
+<div class="alert tip">
+  <strong>💡 Insert ảnh trong bài viết:</strong>
+  <ol>
+    <li>Upload ảnh qua Cloudinary trước (vd qua admin product cũng được)</li>
+    <li>Copy URL Cloudinary của ảnh</li>
+    <li>Trong Tiptap editor, bấm icon 🖼 → paste URL → OK</li>
+  </ol>
+</div>
+
+<h3>9.3. Tags</h3>
+
+<ul>
+  <li>Gõ tag vào ô + bấm Enter để add (hoặc bấm "Thêm")</li>
+  <li>Bấm icon 🗑 trên tag để xoá</li>
+  <li>Tối đa 20 tag/bài</li>
+  <li>Khách có thể click tag ở trang public để lọc bài cùng tag</li>
+</ul>
+
+<h3>9.4. Lưu nháp vs đăng</h3>
+
+<ul>
+  <li>Toggle <strong>"Đăng bài"</strong> OFF → nháp nội bộ, không hiển thị public</li>
+  <li>Toggle ON → tự fill thời gian đăng = hiện tại (có thể edit lùi để backdate hoặc lên lịch)</li>
+</ul>
+
+<h3>9.5. Xem trước trước khi đăng</h3>
+
+<p>Sau khi lưu bài (edit mode), bấm nút <strong>"Xem trước"</strong> ở sticky bar → mở tab mới với URL <code>/blog/[slug]</code> để xem layout thực tế.</p>
+
+<!-- ==================== 10. COUPONS ==================== -->
+<h2 id="coupons">10. Quản lý Mã giảm giá</h2>
+
+<p>URL: <code>/admin/coupons</code></p>
+
+<h3>10.1. Thêm mã</h3>
+
+<ol class="steps">
+  <li>Bấm <strong>"+ Thêm mã"</strong></li>
+  <li>Điền form:
+    <ul>
+      <li><strong>Mã coupon:</strong> tự gõ (chỉ chữ HOA, số, gạch ngang) hoặc bấm <strong>"Sinh ngẫu nhiên"</strong> để có code 8 ký tự</li>
+      <li><strong>Mô tả:</strong> ghi rõ chương trình (vd "Giảm 10% tháng 5/2026")</li>
+      <li><strong>Kiểu giảm giá:</strong>
+        <ul>
+          <li>PERCENT: giảm theo %, giá trị 1-100</li>
+          <li>FIXED: giảm số tiền cố định (VND)</li>
+        </ul>
+      </li>
+      <li><strong>Đơn tối thiểu:</strong> để trống = không giới hạn</li>
+      <li><strong>Hiệu lực từ/đến:</strong> chọn date-time</li>
+      <li><strong>Giới hạn sử dụng:</strong> để trống = không giới hạn lượt</li>
+      <li><strong>Đang bật:</strong> toggle on/off để tạm dừng mã mà không xoá</li>
+    </ul>
+  </li>
+  <li>Bấm <strong>"Tạo coupon"</strong></li>
+</ol>
+
+<h3>10.2. Trạng thái auto-detect</h3>
+
+<p>List hiển thị status được tính tự động theo logic:</p>
+<table>
+  <thead>
+    <tr><th>Trạng thái</th><th>Khi nào</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="badge success">Đang hoạt động</span></td><td>Bật + chưa hết hạn + còn lượt</td></tr>
+    <tr><td><span class="badge muted">Tắt</span></td><td>isActive = false</td></tr>
+    <tr><td><span class="badge muted">Hết hạn</span></td><td>validTo < bây giờ</td></tr>
+    <tr><td><span class="badge muted">Chưa hiệu lực</span></td><td>validFrom > bây giờ</td></tr>
+    <tr><td><span class="badge muted">Hết lượt</span></td><td>usedCount ≥ usageLimit</td></tr>
+  </tbody>
+</table>
+
+<h3>10.3. Sửa khi đã có người dùng</h3>
+
+<div class="alert warn">
+  <strong>⚠️ Khi sửa coupon đã được dùng:</strong>
+  <ul>
+    <li>Không cho phép giảm <code>usageLimit</code> xuống dưới <code>usedCount</code> hiện tại</li>
+    <li>Có thể đổi value/validFrom/validTo bình thường (chỉ áp dụng cho đơn mới)</li>
+  </ul>
+</div>
+
+<!-- ==================== 11. MESSAGES ==================== -->
+<h2 id="messages">11. Tin nhắn liên hệ</h2>
+
+<p>URL: <code>/admin/messages</code></p>
+
+<p>Tin nhắn từ form <code>/contact</code> và <code>/yêu cầu báo giá</code> từ khách.</p>
+
+<h3>11.1. Trạng thái tin nhắn</h3>
+
+<table>
+  <thead>
+    <tr><th>Status</th><th>Khi nào</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><span class="badge accent">Mới (NEW)</span></td><td>Khách vừa gửi, admin chưa mở</td></tr>
+    <tr><td><span class="badge muted">Đã đọc (READ)</span></td><td>Admin đã mở trang chi tiết (auto)</td></tr>
+    <tr><td><span class="badge success">Đã trả lời (REPLIED)</span></td><td>Admin đã reply</td></tr>
+    <tr><td><span class="badge muted">Đã đóng (CLOSED)</span></td><td>Admin manually đóng</td></tr>
+  </tbody>
+</table>
+
+<h3>11.2. Trả lời tin nhắn</h3>
+
+<ol class="steps">
+  <li>Click vào tên người gửi → mở chi tiết</li>
+  <li>Đọc nội dung tin nhắn ở cột trái</li>
+  <li>Trong card <strong>"Trả lời"</strong>:
+    <ul>
+      <li>Textarea — gõ nội dung phản hồi</li>
+      <li>Toggle <strong>"Gửi qua email"</strong>:
+        <ul>
+          <li>BẬT (mặc định) → email được gửi tới khách qua Resend + lưu vào history</li>
+          <li>TẮT → chỉ lưu vào history nội bộ (không gửi email)</li>
+        </ul>
+      </li>
+    </ul>
+  </li>
+  <li>Bấm <strong>"Gửi trả lời"</strong> (nếu bật email) hoặc <strong>"Lưu nội bộ"</strong></li>
+  <li>Sau khi gửi, tin nhắn auto chuyển status = REPLIED, history lưu lại record reply</li>
+</ol>
+
+<h3>11.3. Bulk action (cho nhiều tin cùng lúc)</h3>
+
+<ol>
+  <li>Check vào checkbox đầu row của từng tin muốn xử lý</li>
+  <li>(Hoặc check ở header để chọn tất cả tin hiện tại)</li>
+  <li>Bar action xanh hiện trên cùng với options:
+    <ul>
+      <li><strong>Đánh dấu đã đọc</strong> - chuyển status NEW → READ</li>
+      <li><strong>Đóng</strong> - chuyển sang CLOSED</li>
+      <li><strong>Xoá</strong> - xoá vĩnh viễn (kể cả history reply)</li>
+    </ul>
+  </li>
+</ol>
+
+<!-- ==================== 12. SETTINGS ==================== -->
+<h2 id="settings">12. Cài đặt hệ thống</h2>
+
+<p>URL: <code>/admin/settings</code></p>
+
+<p>Cấu hình toàn site qua 7 tab:</p>
+
+<table>
+  <thead>
+    <tr><th>Tab</th><th>Setting</th></tr>
+  </thead>
+  <tbody>
+    <tr><td><strong>General</strong></td><td>Tên site, tagline, logo URL, favicon URL</td></tr>
+    <tr><td><strong>Contact</strong></td><td>Hotline, email, address, MST, giờ làm việc — hiển thị ở footer + trang liên hệ</td></tr>
+    <tr><td><strong>Social</strong></td><td>Facebook, Zalo, YouTube URLs</td></tr>
+    <tr><td><strong>Payment</strong></td><td>Bật/tắt VNPay/COD, thông tin chuyển khoản ngân hàng</td></tr>
+    <tr><td><strong>Shipping</strong></td><td>Bật GHN API, phí ship mặc định, ngưỡng FREE SHIP</td></tr>
+    <tr><td><strong>Email</strong></td><td>From name, From address, Reply-to</td></tr>
+    <tr><td><strong>SEO</strong></td><td>Meta title/description default, Google Analytics ID, GTM ID</td></tr>
+  </tbody>
+</table>
+
+<div class="alert tip">
+  <strong>💡 Lưu ý:</strong> Một số setting (vd Logo, GA ID) chỉ apply sau khi <strong>redeploy</strong> hoặc <strong>clear cache</strong>. Liên hệ kỹ thuật nếu cần.
+</div>
+
+<!-- ==================== 13. TIPS ==================== -->
+<h2 id="tips">13. Mẹo và lưu ý</h2>
+
+<h3>13.1. Bảo mật</h3>
+
+<ul>
+  <li>✅ Đổi password ngay sau lần đăng nhập đầu</li>
+  <li>✅ Không chia sẻ tài khoản admin với người ngoài team</li>
+  <li>✅ Logout khi rời máy tính công cộng</li>
+  <li>✅ Khi nghi ngờ bị hack, đổi password ngay + báo kỹ thuật</li>
+  <li>❌ Không copy paste mật khẩu vào chat/email (kể cả nội bộ)</li>
+</ul>
+
+<h3>13.2. Quy trình tạo sản phẩm chuẩn</h3>
+
+<ol class="steps">
+  <li>Tạo nháp (DRAFT) — điền tất cả thông tin + upload ảnh đầy đủ</li>
+  <li>Preview trên trang public (mở URL với DRAFT vẫn xem được nếu có link trực tiếp)</li>
+  <li>Kiểm tra: ảnh, mô tả, giá, biến thể, thông số đã đúng</li>
+  <li>Đổi sang ACTIVE — sản phẩm hiển thị ở /products</li>
+  <li>Nếu là sản phẩm mới quan trọng → bật thêm "Nổi bật" để xuất hiện trên trang chủ</li>
+</ol>
+
+<h3>13.3. Quy trình xử lý đơn chuẩn</h3>
+
+<ol class="steps">
+  <li><strong>PENDING:</strong> đơn mới đặt, kiểm tra thông tin khách + tồn kho</li>
+  <li>Liên hệ khách xác nhận → đổi <strong>CONFIRMED</strong> + ghi chú "Đã gọi xác nhận"</li>
+  <li>Đóng gói → đổi <strong>PROCESSING</strong></li>
+  <li>Tạo đơn vận chuyển ở GHN/GHTK → nhập <strong>mã vận đơn</strong> vào card vận chuyển (auto gửi email khách)</li>
+  <li>Khách nhận hàng → đổi shipping status = <strong>DELIVERED</strong></li>
+  <li>Verify thanh toán (COD: thu hộ; VNPay: tự PAID) → mark <strong>PAID</strong> nếu chưa</li>
+  <li>Đổi orderStatus = <strong>COMPLETED</strong></li>
+</ol>
+
+<h3>13.4. Khi nào dùng REFUND vs CANCEL?</h3>
+
+<table>
+  <thead>
+    <tr><th>Tình huống</th><th>Action</th></tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td>Khách yêu cầu huỷ trước khi giao</td>
+      <td><strong>Cancel</strong> (hoàn kho + email)</td>
+    </tr>
+    <tr>
+      <td>Hết hàng, không thể giao</td>
+      <td><strong>Cancel</strong> với reason "Hết hàng"</td>
+    </tr>
+    <tr>
+      <td>Khách trả hàng sau khi nhận (đã COMPLETED)</td>
+      <td><strong>Refund</strong> + tự xử lý nhận hàng về kho</td>
+    </tr>
+    <tr>
+      <td>Sản phẩm lỗi cần hoàn 1 phần</td>
+      <td><strong>Refund</strong> với số tiền partial</td>
+    </tr>
+  </tbody>
+</table>
+
+<h3>13.5. Quy ước đặt slug</h3>
+
+<ul>
+  <li>Tự động tạo từ tên — chỉ sửa nếu cần</li>
+  <li>Format: chữ thường, không dấu, dùng dấu gạch ngang</li>
+  <li>Ví dụ: <code>den-led-150w-smart</code></li>
+  <li>Slug đã publish → hạn chế đổi (sẽ break các link đã share + SEO Google đã index)</li>
+</ul>
+
+<!-- ==================== 14. FAQ ==================== -->
+<h2 id="faq">14. FAQ</h2>
+
+<h3>❓ Quên mật khẩu admin?</h3>
+<p>Liên hệ kỹ thuật reset qua Supabase Dashboard hoặc chạy script seed lại password.</p>
+
+<h3>❓ Khách không nhận được email xác nhận đơn?</h3>
+<ul>
+  <li>Check Resend dashboard xem email có gửi không (status delivered/bounced)</li>
+  <li>Check inbox + spam của khách</li>
+  <li>Verify <code>EMAIL_FROM</code> trong setting đúng domain đã verify</li>
+</ul>
+
+<h3>❓ Tổng tồn kho 1 sản phẩm = sum tồn kho các biến thể?</h3>
+<p>Có. Khi sản phẩm có biến thể (hasVariants=true), tổng tồn = sum stock của mọi variant. Khi không có biến thể, dùng "Tồn kho" ở Card 2.</p>
+
+<h3>❓ Có thể bulk import sản phẩm từ Excel?</h3>
+<p>Chưa support trực tiếp. Liên hệ kỹ thuật chạy script seed batch nếu cần import nhiều.</p>
+
+<h3>❓ Báo giá (BG) — code <code>0425/2026/LVC-BG</code> tạo thế nào?</h3>
+<p>Sẽ phát triển trong giai đoạn sau (Phase 7). Hiện chỉ có yêu cầu báo giá lưu vào <code>ContactMessage</code>, admin xử lý thủ công.</p>
+
+<h3>❓ Customer login bằng Google — xoá được không?</h3>
+<p>Không xoá user, chỉ <strong>Khoá tài khoản</strong> (lock). Lock chặn cả Google OAuth. Xoá thật sẽ break đơn hàng cũ.</p>
+
+<h3>❓ VNPay sandbox vs production khác nhau gì?</h3>
+<ul>
+  <li><strong>Sandbox:</strong> URL <code>sandbox.vnpayment.vn</code>, dùng thẻ test, không trừ tiền thật</li>
+  <li><strong>Production:</strong> URL <code>pay.vnpay.vn</code>, dùng thẻ thật, trừ tiền thật. Cần ký hợp đồng với VNPay + verify business</li>
+</ul>
+<p>Hiện đang dùng <strong>sandbox</strong>. Khi sẵn sàng go-live thật, liên hệ kỹ thuật cập nhật env VNPAY_URL.</p>
+
+</main>
+</div>
+
+<footer>
+  <p>📘 Hướng dẫn sử dụng Admin Panel — <strong>LAVIPCO Website</strong></p>
+  <p>Phiên bản tháng 5/2026 · Liên hệ kỹ thuật khi có thắc mắc</p>
+</footer>
+
+<script>
+  // Smooth scroll cho anchor link
+  document.querySelectorAll('aside a[href^="#"]').forEach(link => {
+    link.addEventListener('click', function (e) {
+      e.preventDefault();
+      const target = document.querySelector(this.getAttribute('href'));
+      if (target) {
+        target.scrollIntoView({ behavior: 'smooth', block: 'start' });
+        // Close mobile TOC after click
+        if (window.innerWidth < 900) {
+          document.querySelector('aside').style.display = 'none';
+        }
+      }
+    });
+  });
+</script>
+
+</body>
+</html>
