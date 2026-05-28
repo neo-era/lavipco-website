@@ -320,6 +320,7 @@ export default async function AdminCustomerDetailPage({
             isLocked={customer.isLocked}
             isSelf={customer.id === session.user.id}
             isAdminRole={customer.role === "ADMIN"}
+            currentRole={customer.role}
           />
         </div>
       </div>

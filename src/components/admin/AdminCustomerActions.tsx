@@ -16,18 +16,29 @@ import {
   Tag,
   X,
   StickyNote,
+  ShieldCheck,
+  KeyRound,
 } from "lucide-react";
 
 import {
   updateCustomerTags,
   toggleCustomerLock,
   updateCustomerNote,
+  updateUserRole,
+  resetUserPassword,
 } from "@/lib/actions/admin-customers";
 import { useToast } from "@/hooks/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Textarea } from "@/components/ui/textarea";
 import { Badge } from "@/components/ui/badge";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -39,6 +50,8 @@ import {
 
 const PRESET_TAGS = ["VIP", "B2B", "Loyal", "Wholesale", "Distributor"];
 
+type UserRole = "USER" | "STAFF" | "ADMIN";
+
 type Props = {
   customerId: string;
   customerName: string;
@@ -47,6 +60,7 @@ type Props = {
   isLocked: boolean;
   isSelf: boolean;
   isAdminRole: boolean;
+  currentRole: UserRole;
 };
 
 export function AdminCustomerActions({
@@ -57,6 +71,7 @@ export function AdminCustomerActions({
   isLocked,
   isSelf,
   isAdminRole,
+  currentRole,
 }: Props) {
   const router = useRouter();
   const { toast } = useToast();
@@ -66,6 +81,14 @@ export function AdminCustomerActions({
   const [newTag, setNewTag] = React.useState("");
   const [note, setNote] = React.useState(initialNote);
   const [confirmLockOpen, setConfirmLockOpen] = React.useState(false);
+
+  const [role, setRole] = React.useState<UserRole>(currentRole);
+  const [confirmRoleOpen, setConfirmRoleOpen] = React.useState(false);
+  const [newPassword, setNewPassword] = React.useState("");
+  const [confirmPwOpen, setConfirmPwOpen] = React.useState(false);
+
+  const roleDirty = role !== currentRole;
+  const pwValid = newPassword.length >= 8 && /[A-Za-z]/.test(newPassword) && /\d/.test(newPassword);
 
   const tagsDirty = JSON.stringify(tags) !== JSON.stringify(initialTags);
   const noteDirty = note.trim() !== initialNote.trim();
@@ -142,6 +165,48 @@ export function AdminCustomerActions({
       } else {
         toast({
           title: "Lỗi",
+          description: res.error,
+          variant: "destructive",
+        });
+      }
+    });
+  }
+
+  function handleUpdateRole() {
+    startTransition(async () => {
+      const res = await updateUserRole(customerId, { role });
+      if (res.ok) {
+        toast({
+          title: "✓ Đã cập nhật vai trò",
+          description: `${customerName} → ${role}`,
+        });
+        setConfirmRoleOpen(false);
+        router.refresh();
+      } else {
+        setRole(currentRole);
+        toast({
+          title: "Lỗi đổi vai trò",
+          description: res.error,
+          variant: "destructive",
+        });
+      }
+    });
+  }
+
+  function handleResetPassword() {
+    startTransition(async () => {
+      const res = await resetUserPassword(customerId, { newPassword });
+      if (res.ok) {
+        toast({
+          title: "✓ Đã đặt lại mật khẩu",
+          description: `${customerName} cần đăng nhập lại bằng mật khẩu mới.`,
+        });
+        setNewPassword("");
+        setConfirmPwOpen(false);
+        router.refresh();
+      } else {
+        toast({
+          title: "Lỗi đặt lại mật khẩu",
           description: res.error,
           variant: "destructive",
         });
@@ -262,6 +327,79 @@ export function AdminCustomerActions({
         </p>
       </div>
 
+      {/* Role / phân quyền */}
+      <div className="space-y-3 rounded-xl border bg-card p-5">
+        <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <ShieldCheck className="h-4 w-4 text-brand-primary" />
+          Vai trò &amp; phân quyền
+        </h3>
+        {isSelf ? (
+          <p className="text-xs text-muted-foreground">
+            Không thể tự đổi vai trò của chính mình.
+          </p>
+        ) : (
+          <>
+            <Select
+              value={role}
+              onValueChange={(v) => setRole(v as UserRole)}
+              disabled={pending}
+            >
+              <SelectTrigger>
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="USER">USER — Khách hàng</SelectItem>
+                <SelectItem value="STAFF">STAFF — Nhân viên</SelectItem>
+                <SelectItem value="ADMIN">ADMIN — Quản trị</SelectItem>
+              </SelectContent>
+            </Select>
+            <p className="text-[10px] text-muted-foreground">
+              ADMIN: toàn quyền. STAFF: hỗ trợ vận hành. USER: khách mua hàng.
+            </p>
+            {roleDirty && (
+              <Button
+                size="sm"
+                variant="brand"
+                className="w-full"
+                onClick={() => setConfirmRoleOpen(true)}
+                disabled={pending}
+              >
+                <Save className="h-3 w-3" />
+                Cập nhật vai trò
+              </Button>
+            )}
+          </>
+        )}
+      </div>
+
+      {/* Reset password */}
+      <div className="space-y-2 rounded-xl border bg-card p-5">
+        <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
+          <KeyRound className="h-4 w-4 text-brand-primary" />
+          Đặt lại mật khẩu
+        </h3>
+        <Input
+          type="password"
+          value={newPassword}
+          onChange={(e) => setNewPassword(e.target.value)}
+          placeholder="Mật khẩu mới (≥8 ký tự, có chữ + số)"
+          autoComplete="new-password"
+        />
+        <p className="text-[10px] text-muted-foreground">
+          Sau khi đặt lại, user sẽ bị đăng xuất và phải dùng mật khẩu mới.
+        </p>
+        <Button
+          size="sm"
+          variant="outline"
+          className="w-full"
+          onClick={() => setConfirmPwOpen(true)}
+          disabled={pending || !pwValid}
+        >
+          <KeyRound className="h-3 w-3" />
+          Đặt lại mật khẩu
+        </Button>
+      </div>
+
       {/* Lock account */}
       <div className="space-y-2 rounded-xl border bg-card p-5">
         <h3 className="flex items-center gap-2 text-sm font-semibold uppercase tracking-wider text-muted-foreground">
@@ -334,6 +472,64 @@ export function AdminCustomerActions({
             >
               {pending && <Loader2 className="h-3 w-3 animate-spin" />}
               {isLocked ? "Mở khoá" : "Khoá tài khoản"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm role change dialog */}
+      <Dialog open={confirmRoleOpen} onOpenChange={setConfirmRoleOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Đổi vai trò thành {role}?</DialogTitle>
+            <DialogDescription>
+              {role === "ADMIN"
+                ? `"${customerName}" sẽ có TOÀN QUYỀN quản trị (quản lý sản phẩm, đơn hàng, người dùng, cấu hình). Chỉ cấp cho người tin cậy.`
+                : `Cập nhật vai trò của "${customerName}" thành ${role}. Thay đổi có hiệu lực ở lần đăng nhập kế tiếp.`}
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setConfirmRoleOpen(false)}
+              disabled={pending}
+            >
+              Huỷ
+            </Button>
+            <Button variant="brand" onClick={handleUpdateRole} disabled={pending}>
+              {pending && <Loader2 className="h-3 w-3 animate-spin" />}
+              Xác nhận
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Confirm reset password dialog */}
+      <Dialog open={confirmPwOpen} onOpenChange={setConfirmPwOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Đặt lại mật khẩu?</DialogTitle>
+            <DialogDescription>
+              Mật khẩu của &quot;{customerName}&quot; sẽ được thay bằng mật khẩu
+              mới và các session hiện tại bị đăng xuất. Hãy gửi mật khẩu mới cho
+              người dùng qua kênh an toàn.
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter>
+            <Button
+              variant="ghost"
+              onClick={() => setConfirmPwOpen(false)}
+              disabled={pending}
+            >
+              Huỷ
+            </Button>
+            <Button
+              variant="destructive"
+              onClick={handleResetPassword}
+              disabled={pending || !pwValid}
+            >
+              {pending && <Loader2 className="h-3 w-3 animate-spin" />}
+              Đặt lại
             </Button>
           </DialogFooter>
         </DialogContent>
