@@ -201,7 +201,7 @@ export default async function OrderDetailPage({
                 <p className="text-muted-foreground">{shipping.recipientPhone}</p>
                 <p className="text-muted-foreground">{shipping.recipientEmail}</p>
                 <p className="pt-2">
-                  {shipping.street}, {shipping.wardName}, {shipping.districtName},{" "}
+                  {shipping.street}, {shipping.wardName},{" "}
                   {shipping.provinceName}
                 </p>
                 {order.note && (

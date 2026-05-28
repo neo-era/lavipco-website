@@ -98,11 +98,12 @@ model Address {
   fullName     String
   phone        String
   province     String
-  district     String
+  // district: bỏ theo cấu trúc 2 cấp sau sáp nhập 2025 (giữ nullable cho dữ liệu cũ)
+  district     String?
   ward         String
   street       String
   isDefault    Boolean @default(false)
-  // Mã hành chính chuẩn (GHN/GHTK) — optional, fill khi tích hợp shipping
+  // Mã hành chính chuẩn — optional
   provinceCode String?
   districtCode String?
   wardCode     String?

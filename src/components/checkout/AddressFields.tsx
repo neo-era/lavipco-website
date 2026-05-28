@@ -3,21 +3,7 @@
 import * as React from "react";
 import { useFormContext } from "react-hook-form";
 
-import type { Province, District, Ward } from "@/lib/regions";
-
-/**
- * Subset field mà AddressFields cần. Cả CheckoutInput và AddressInput
- * đều có 7 field này nên reuse được component qua FormProvider chung.
- */
-type AddressFormShape = {
-  provinceCode: string;
-  provinceName: string;
-  districtCode: string;
-  districtName: string;
-  wardCode: string;
-  wardName: string;
-  street: string;
-};
+import type { Province, Ward } from "@/lib/regions";
 import {
   FormControl,
   FormField,
@@ -35,20 +21,31 @@ import {
 import { Input } from "@/components/ui/input";
 
 /**
- * 3 cascading selects: Tỉnh → Quận/Huyện → Phường/Xã.
+ * Subset field mà AddressFields cần. Cả CheckoutInput và AddressInput
+ * đều có các field này nên reuse được qua FormProvider chung.
  *
- * Fetch từ /api/regions/* khi mount + khi parent thay đổi. Cập nhật cả 2 trường:
- *   - <field>Code (lưu vào form để submit)
- *   - <field>Name (lưu để snapshot + GHN lookup)
+ * Cấu trúc 2 cấp sau sáp nhập 2025: Tỉnh/Thành → Phường/Xã (không còn Quận/Huyện).
+ */
+type AddressFormShape = {
+  provinceCode: string;
+  provinceName: string;
+  wardCode: string;
+  wardName: string;
+  street: string;
+};
+
+/**
+ * 2 cascading selects: Tỉnh/Thành → Phường/Xã.
+ *
+ * Fetch từ /api/regions/* khi mount + khi tỉnh thay đổi. Cập nhật cả 2 trường:
+ *   - <field>Code (submit) + <field>Name (snapshot hiển thị).
  */
 export function AddressFields() {
   const form = useFormContext<AddressFormShape>();
   const [provinces, setProvinces] = React.useState<Province[]>([]);
-  const [districts, setDistricts] = React.useState<District[]>([]);
   const [wards, setWards] = React.useState<Ward[]>([]);
 
   const provinceCode = form.watch("provinceCode");
-  const districtCode = form.watch("districtCode");
 
   // Load provinces 1 lần
   React.useEffect(() => {
@@ -58,45 +55,23 @@ export function AddressFields() {
       .catch(() => setProvinces([]));
   }, []);
 
-  // Load districts khi provinceCode thay đổi
+  // Load wards khi provinceCode thay đổi
   React.useEffect(() => {
     if (!provinceCode) {
-      setDistricts([]);
-      return;
-    }
-    fetch(`/api/regions/districts?provinceCode=${provinceCode}`)
-      .then((res) => res.json())
-      .then((data: District[]) => setDistricts(data))
-      .catch(() => setDistricts([]));
-  }, [provinceCode]);
-
-  // Load wards khi districtCode thay đổi
-  React.useEffect(() => {
-    if (!districtCode) {
       setWards([]);
       return;
     }
-    fetch(`/api/regions/wards?districtCode=${districtCode}`)
+    fetch(`/api/regions/wards?provinceCode=${provinceCode}`)
       .then((res) => res.json())
       .then((data: Ward[]) => setWards(data))
       .catch(() => setWards([]));
-  }, [districtCode]);
+  }, [provinceCode]);
 
   function handleProvinceChange(code: string) {
     const province = provinces.find((p) => p.code === code);
     form.setValue("provinceCode", code, { shouldValidate: true });
     form.setValue("provinceName", province?.name ?? "");
-    // Reset district + ward
-    form.setValue("districtCode", "");
-    form.setValue("districtName", "");
-    form.setValue("wardCode", "");
-    form.setValue("wardName", "");
-  }
-
-  function handleDistrictChange(code: string) {
-    const district = districts.find((d) => d.code === code);
-    form.setValue("districtCode", code, { shouldValidate: true });
-    form.setValue("districtName", district?.name ?? "");
+    // Reset ward
     form.setValue("wardCode", "");
     form.setValue("wardName", "");
   }
@@ -109,7 +84,7 @@ export function AddressFields() {
 
   return (
     <div className="space-y-4">
-      <div className="grid gap-4 sm:grid-cols-3">
+      <div className="grid gap-4 sm:grid-cols-2">
         {/* Province */}
         <FormField
           control={form.control}
@@ -138,40 +113,6 @@ export function AddressFields() {
           )}
         />
 
-        {/* District */}
-        <FormField
-          control={form.control}
-          name="districtCode"
-          render={({ field }) => (
-            <FormItem>
-              <FormLabel>
-                Quận/Huyện <span className="text-destructive">*</span>
-              </FormLabel>
-              <Select
-                onValueChange={handleDistrictChange}
-                value={field.value}
-                disabled={!provinceCode || districts.length === 0}
-              >
-                <FormControl>
-                  <SelectTrigger>
-                    <SelectValue
-                      placeholder={provinceCode ? "Chọn quận/huyện" : "Chọn tỉnh trước"}
-                    />
-                  </SelectTrigger>
-                </FormControl>
-                <SelectContent>
-                  {districts.map((d) => (
-                    <SelectItem key={d.code} value={d.code}>
-                      {d.name}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-
         {/* Ward */}
         <FormField
           control={form.control}
@@ -184,12 +125,12 @@ export function AddressFields() {
               <Select
                 onValueChange={handleWardChange}
                 value={field.value}
-                disabled={!districtCode || wards.length === 0}
+                disabled={!provinceCode || wards.length === 0}
               >
                 <FormControl>
                   <SelectTrigger>
                     <SelectValue
-                      placeholder={districtCode ? "Chọn phường/xã" : "Chọn huyện trước"}
+                      placeholder={provinceCode ? "Chọn phường/xã" : "Chọn tỉnh trước"}
                     />
                   </SelectTrigger>
                 </FormControl>

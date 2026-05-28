@@ -112,7 +112,6 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
   const totalItemCount = data.items.reduce((s, i) => s + i.quantity, 0);
   const shipping = await calculateShippingFee({
     provinceName: data.provinceName,
-    districtName: data.districtName,
     wardName: data.wardName,
     weight: estimateOrderWeight(totalItemCount),
     insuranceValue: computedSubtotal,
@@ -165,8 +164,6 @@ export async function createOrder(input: CheckoutInput): Promise<CreateOrderResu
             recipientEmail: data.recipientEmail,
             provinceCode: data.provinceCode,
             provinceName: data.provinceName,
-            districtCode: data.districtCode,
-            districtName: data.districtName,
             wardCode: data.wardCode,
             wardName: data.wardName,
             street: data.street,

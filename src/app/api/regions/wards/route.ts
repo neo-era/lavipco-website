@@ -3,21 +3,18 @@ import { NextResponse } from "next/server";
 import { getWards } from "@/lib/regions";
 
 /**
- * GET /api/regions/wards?districtCode=XXX
- * Trả về list phường/xã thuộc huyện đó.
+ * GET /api/regions/wards?provinceCode=XXX
+ * Trả về list phường/xã thuộc tỉnh/thành đó (cấu trúc 2 cấp sau sáp nhập).
  */
 export async function GET(request: Request) {
   const url = new URL(request.url);
-  const districtCode = url.searchParams.get("districtCode") ?? undefined;
+  const provinceCode = url.searchParams.get("provinceCode") ?? undefined;
 
-  if (!districtCode) {
-    return NextResponse.json(
-      { error: "Thiếu districtCode" },
-      { status: 400 },
-    );
+  if (!provinceCode) {
+    return NextResponse.json({ error: "Thiếu provinceCode" }, { status: 400 });
   }
 
-  return NextResponse.json(getWards(districtCode), {
+  return NextResponse.json(getWards(provinceCode), {
     headers: {
       "Cache-Control": "public, max-age=3600, s-maxage=86400",
     },

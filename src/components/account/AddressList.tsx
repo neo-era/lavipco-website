@@ -58,8 +58,6 @@ function AddressRow({ address }: { address: Address }) {
     phone: address.phone,
     provinceCode: address.provinceCode ?? "",
     provinceName: address.province,
-    districtCode: address.districtCode ?? "",
-    districtName: address.district,
     wardCode: address.wardCode ?? "",
     wardName: address.ward,
     street: address.street,
@@ -119,7 +117,7 @@ function AddressRow({ address }: { address: Address }) {
           <p className="flex items-start gap-2 text-sm">
             <MapPin className="mt-0.5 h-3.5 w-3.5 shrink-0 text-muted-foreground" />
             <span>
-              {address.street}, {address.ward}, {address.district}, {address.province}
+              {address.street}, {address.ward}, {address.province}
             </span>
           </p>
         </div>

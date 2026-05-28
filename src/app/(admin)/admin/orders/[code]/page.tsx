@@ -315,7 +315,7 @@ export default async function AdminOrderDetailPage({
                   <p className="text-muted-foreground">{shipping.recipientEmail}</p>
                 )}
                 <p className="pt-2">
-                  {shipping.street}, {shipping.wardName}, {shipping.districtName},{" "}
+                  {shipping.street}, {shipping.wardName},{" "}
                   {shipping.provinceName}
                 </p>
                 {order.note && (

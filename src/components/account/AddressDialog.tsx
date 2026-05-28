@@ -41,8 +41,6 @@ const DEFAULTS: AddressInput = {
   phone: "",
   provinceCode: "",
   provinceName: "",
-  districtCode: "",
-  districtName: "",
   wardCode: "",
   wardName: "",
   street: "",

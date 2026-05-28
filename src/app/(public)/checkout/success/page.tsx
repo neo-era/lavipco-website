@@ -151,7 +151,7 @@ export default async function CheckoutSuccessPage({
                   </p>
                   <p>{shipping.recipientEmail}</p>
                   <p>
-                    {shipping.street}, {shipping.wardName}, {shipping.districtName},{" "}
+                    {shipping.street}, {shipping.wardName},{" "}
                     {shipping.provinceName}
                   </p>
                 </div>

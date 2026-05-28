@@ -301,7 +301,7 @@ export default async function AdminCustomerDetailPage({
                       )}
                     </div>
                     <p className="mt-1 text-sm">
-                      {addr.street}, {addr.ward}, {addr.district}, {addr.province}
+                      {addr.street}, {addr.ward}, {addr.province}
                     </p>
                   </li>
                 ))}

@@ -39,8 +39,6 @@ const DEFAULTS: CheckoutInput = {
   recipientEmail: "",
   provinceCode: "",
   provinceName: "",
-  districtCode: "",
-  districtName: "",
   wardCode: "",
   wardName: "",
   street: "",

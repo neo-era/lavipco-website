@@ -31,11 +31,9 @@ export const checkoutSchema = z.object({
   recipientPhone: phoneVNSchema,
   recipientEmail: emailSchema,
 
-  // Địa chỉ (lưu code + name để dễ hiển thị + tích hợp GHN)
+  // Địa chỉ 2 cấp (sau sáp nhập 2025): Tỉnh/Thành → Phường/Xã. Lưu code + name.
   provinceCode: z.string().min(1, { message: "Chọn tỉnh/thành" }),
   provinceName: z.string().min(1),
-  districtCode: z.string().min(1, { message: "Chọn quận/huyện" }),
-  districtName: z.string().min(1),
   wardCode: z.string().min(1, { message: "Chọn phường/xã" }),
   wardName: z.string().min(1),
   street: z

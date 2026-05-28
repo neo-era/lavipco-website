@@ -7,8 +7,6 @@ export const addressSchema = z.object({
   phone: phoneVNSchema,
   provinceCode: z.string().min(1, { message: "Chọn tỉnh/thành" }),
   provinceName: z.string().min(1),
-  districtCode: z.string().min(1, { message: "Chọn quận/huyện" }),
-  districtName: z.string().min(1),
   wardCode: z.string().min(1, { message: "Chọn phường/xã" }),
   wardName: z.string().min(1),
   street: z
