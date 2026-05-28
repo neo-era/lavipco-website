@@ -59,6 +59,9 @@ export function CheckoutForm() {
   const { toast } = useToast();
 
   const [discountAmount, setDiscountAmount] = React.useState(0);
+  // Cờ chặn redirect "giỏ trống" khi đang đặt hàng thành công (vì clear() sẽ
+  // làm items=0, không được hiểu nhầm là user vào checkout với giỏ rỗng).
+  const isRedirectingRef = React.useRef(false);
 
   const form = useForm<CheckoutInput>({
     resolver: zodResolver(checkoutSchema),
@@ -66,9 +69,9 @@ export function CheckoutForm() {
     mode: "onBlur",
   });
 
-  // Redirect khi giỏ trống (sau hydrate)
+  // Redirect khi giỏ trống (sau hydrate) — bỏ qua khi đang redirect sau đặt hàng
   React.useEffect(() => {
-    if (hydrated && items.length === 0) {
+    if (hydrated && items.length === 0 && !isRedirectingRef.current) {
       router.replace("/cart");
     }
   }, [hydrated, items.length, router]);
@@ -111,9 +114,17 @@ export function CheckoutForm() {
       return;
     }
 
-    // Thành công → clear cart + redirect
+    // Thành công → đánh dấu đang redirect TRƯỚC khi clear (chặn effect "giỏ trống")
+    isRedirectingRef.current = true;
     useCartStore.getState().clear();
-    router.push(result.redirectUrl);
+
+    // VNPay/MoMo trả URL gateway external → phải dùng window.location.
+    // Trang nội bộ (/checkout/success) dùng router.push.
+    if (/^https?:\/\//.test(result.redirectUrl)) {
+      window.location.href = result.redirectUrl;
+    } else {
+      router.push(result.redirectUrl);
+    }
   }
 
   if (!hydrated) {
