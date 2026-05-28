@@ -6,6 +6,7 @@ import { CheckCircle2, Package, ArrowRight, Truck, Building } from "lucide-react
 import { db } from "@/lib/db";
 import { formatCurrency, formatDateTime } from "@/lib/utils";
 import { SITE_CONFIG } from "@/lib/constants";
+import { loadSettings } from "@/lib/actions/admin-settings";
 import { Container } from "@/components/layout/Container";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -41,6 +42,10 @@ export default async function CheckoutSuccessPage({
 
   const shipping = order.shippingSnapshot as Record<string, string> | null;
   const isBankTransfer = order.paymentMethod === "BANK_TRANSFER";
+
+  // Thông tin chuyển khoản lấy từ Settings (admin config ở /admin/settings → Payment)
+  const settings = isBankTransfer ? await loadSettings() : null;
+  const bankInfo = settings?.payment_bankAccount?.trim() ?? "";
 
   return (
     <>
@@ -87,7 +92,7 @@ export default async function CheckoutSuccessPage({
 
           {/* Bank transfer guide */}
           {isBankTransfer && (
-            <BankTransferGuide order={order} />
+            <BankTransferGuide order={order} bankInfo={bankInfo} />
           )}
 
           {/* Order summary */}
@@ -201,8 +206,10 @@ function paymentMethodLabel(method: string): string {
 
 function BankTransferGuide({
   order,
+  bankInfo,
 }: {
   order: { code: string; total: import("@prisma/client").Prisma.Decimal };
+  bankInfo: string;
 }) {
   return (
     <div className="mt-6 rounded-xl border border-brand-primary/30 bg-brand-primary/5 p-5">
@@ -210,20 +217,21 @@ function BankTransferGuide({
         <Building className="h-5 w-5 text-brand-primary" />
         <h3 className="font-semibold">Hướng dẫn chuyển khoản</h3>
       </div>
-      <dl className="space-y-2 text-sm">
-        <div className="grid grid-cols-[120px_1fr] gap-2">
-          <dt className="text-muted-foreground">Ngân hàng</dt>
-          {/* TODO: Lam điền thông tin ngân hàng thật trong Setting */}
-          <dd className="font-medium">Vietcombank - Chi nhánh TP.HCM</dd>
+
+      {bankInfo ? (
+        // Thông tin ngân hàng từ Settings (textarea tự do — render giữ xuống dòng)
+        <div className="whitespace-pre-line rounded-md bg-background/60 p-3 text-sm">
+          {bankInfo}
         </div>
-        <div className="grid grid-cols-[120px_1fr] gap-2">
-          <dt className="text-muted-foreground">Số tài khoản</dt>
-          <dd className="font-mono font-medium">[TODO: STK LAVIPCO]</dd>
-        </div>
-        <div className="grid grid-cols-[120px_1fr] gap-2">
-          <dt className="text-muted-foreground">Chủ tài khoản</dt>
-          <dd className="font-medium">CONG TY TNHH KY NGHE LAM VIET PHAT</dd>
-        </div>
+      ) : (
+        <p className="rounded-md bg-orange-500/10 p-3 text-sm text-orange-700">
+          Thông tin chuyển khoản chưa được cấu hình. Vui lòng liên hệ{" "}
+          {SITE_CONFIG.hotline || "hotline LAVIPCO"} để được hướng dẫn thanh toán.
+        </p>
+      )}
+
+      {/* Số tiền + nội dung CK luôn động theo đơn (để đối soát) */}
+      <dl className="mt-3 space-y-2 text-sm">
         <div className="grid grid-cols-[120px_1fr] gap-2">
           <dt className="text-muted-foreground">Số tiền</dt>
           <dd className="font-bold text-brand-primary">
