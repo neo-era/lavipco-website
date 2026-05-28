@@ -1,3 +1,5 @@
+import { withSentryConfig } from "@sentry/nextjs";
+
 /** @type {import('next').NextConfig} */
 
 /**
@@ -23,7 +25,7 @@ const cspDirectives = [
   "style-src 'self' 'unsafe-inline'",
   "img-src 'self' data: blob: https://res.cloudinary.com https://images.unsplash.com https://www.google-analytics.com",
   "font-src 'self' data:",
-  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.cloudinary.com https://sandbox.vnpayment.vn",
+  "connect-src 'self' https://www.google-analytics.com https://analytics.google.com https://api.cloudinary.com https://sandbox.vnpayment.vn https://*.ingest.us.sentry.io",
   "frame-src 'self' https://www.googletagmanager.com",
   "form-action 'self' https://sandbox.vnpayment.vn https://merchant.vnpay.vn",
   "base-uri 'self'",
@@ -55,6 +57,10 @@ if (isProduction) {
 }
 
 const nextConfig = {
+  // Cần cho src/instrumentation.ts (nạp Sentry server/edge) ở Next 14
+  experimental: {
+    instrumentationHook: true,
+  },
   images: {
     remotePatterns: [
       {
@@ -81,4 +87,13 @@ const nextConfig = {
   poweredByHeader: false,
 };
 
-export default nextConfig;
+/**
+ * Bọc Sentry. Không có SENTRY_ORG/PROJECT/AUTH_TOKEN thì bỏ qua upload source map
+ * (chỉ cảnh báo, không fail build). Runtime vẫn bắt lỗi nếu có DSN.
+ */
+export default withSentryConfig(nextConfig, {
+  org: process.env.SENTRY_ORG,
+  project: process.env.SENTRY_PROJECT,
+  silent: !process.env.CI,
+  widenClientFileUpload: true,
+});

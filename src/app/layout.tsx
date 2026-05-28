@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
+import { Analytics } from "@vercel/analytics/next";
 
 import "./globals.css";
 import { SITE_CONFIG } from "@/lib/constants";
@@ -78,6 +79,8 @@ export default function RootLayout({
         <JsonLd data={[buildOrganizationSchema(), buildWebSiteSchema()]} />
         {/* GA4/GTM defensive load (chỉ khi env có) */}
         <GoogleAnalytics />
+        {/* Vercel Analytics - traffic + Core Web Vitals */}
+        <Analytics />
       </body>
     </html>
   );
