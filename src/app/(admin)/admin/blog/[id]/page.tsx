@@ -5,6 +5,7 @@ import { ChevronLeft, ExternalLink } from "lucide-react";
 
 import { db } from "@/lib/db";
 import type { BlogPostInput } from "@/lib/validations/admin-blog";
+import { isAIEnabled } from "@/lib/actions/ai-content";
 import { Button } from "@/components/ui/button";
 import { AdminBlogForm } from "@/components/admin/AdminBlogForm";
 
@@ -32,7 +33,10 @@ export default async function EditBlogPostPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const post = await db.blogPost.findUnique({ where: { id } });
+  const [post, aiEnabled] = await Promise.all([
+    db.blogPost.findUnique({ where: { id } }),
+    isAIEnabled(),
+  ]);
   if (!post) notFound();
 
   const defaultValues: BlogPostInput = {
@@ -66,7 +70,12 @@ export default async function EditBlogPostPage({
           Xem trang public <ExternalLink className="h-3.5 w-3.5" />
         </Link>
       </div>
-      <AdminBlogForm mode="edit" postId={post.id} defaultValues={defaultValues} />
+      <AdminBlogForm
+        mode="edit"
+        postId={post.id}
+        defaultValues={defaultValues}
+        aiEnabled={aiEnabled}
+      />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { ChevronLeft, ExternalLink } from "lucide-react";
 
 import { db } from "@/lib/db";
 import type { ProjectInput } from "@/lib/validations/admin-project";
+import { isAIEnabled } from "@/lib/actions/ai-content";
 import { Button } from "@/components/ui/button";
 import { AdminProjectForm } from "@/components/admin/AdminProjectForm";
 
@@ -16,7 +17,10 @@ export default async function EditProjectPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const project = await db.project.findUnique({ where: { id } });
+  const [project, aiEnabled] = await Promise.all([
+    db.project.findUnique({ where: { id } }),
+    isAIEnabled(),
+  ]);
   if (!project) notFound();
 
   const defaultValues: ProjectInput = {
@@ -57,6 +61,7 @@ export default async function EditProjectPage({
         mode="edit"
         projectId={project.id}
         defaultValues={defaultValues}
+        aiEnabled={aiEnabled}
       />
     </div>
   );

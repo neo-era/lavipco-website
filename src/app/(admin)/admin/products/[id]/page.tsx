@@ -5,6 +5,7 @@ import { ChevronLeft, ExternalLink } from "lucide-react";
 
 import { db } from "@/lib/db";
 import type { ProductInput } from "@/lib/validations/admin-product";
+import { isAIEnabled } from "@/lib/actions/ai-content";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { AdminProductForm } from "@/components/admin/product-form/AdminProductForm";
@@ -20,7 +21,7 @@ export default async function EditProductPage({
 }) {
   const { id } = await params;
 
-  const [product, categories] = await Promise.all([
+  const [product, categories, aiEnabled] = await Promise.all([
     db.product.findUnique({
       where: { id },
       include: {
@@ -33,6 +34,7 @@ export default async function EditProductPage({
       orderBy: { sortOrder: "asc" },
       select: { id: true, name: true },
     }),
+    isAIEnabled(),
   ]);
 
   if (!product) {
@@ -149,6 +151,7 @@ export default async function EditProductPage({
         productId={product.id}
         categories={categories}
         defaultValues={defaultValues}
+        aiEnabled={aiEnabled}
       />
     </div>
   );

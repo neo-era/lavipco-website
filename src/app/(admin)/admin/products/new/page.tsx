@@ -4,6 +4,7 @@ import { ChevronLeft } from "lucide-react";
 
 import { db } from "@/lib/db";
 import type { ProductInput } from "@/lib/validations/admin-product";
+import { isAIEnabled } from "@/lib/actions/ai-content";
 import { Button } from "@/components/ui/button";
 import { AdminProductForm } from "@/components/admin/product-form/AdminProductForm";
 
@@ -33,10 +34,13 @@ const DEFAULT_VALUES: ProductInput = {
 };
 
 export default async function NewProductPage() {
-  const categories = await db.category.findMany({
-    orderBy: { sortOrder: "asc" },
-    select: { id: true, name: true },
-  });
+  const [categories, aiEnabled] = await Promise.all([
+    db.category.findMany({
+      orderBy: { sortOrder: "asc" },
+      select: { id: true, name: true },
+    }),
+    isAIEnabled(),
+  ]);
 
   return (
     <div className="space-y-5">
@@ -70,6 +74,7 @@ export default async function NewProductPage() {
           mode="create"
           categories={categories}
           defaultValues={DEFAULT_VALUES}
+          aiEnabled={aiEnabled}
         />
       )}
     </div>

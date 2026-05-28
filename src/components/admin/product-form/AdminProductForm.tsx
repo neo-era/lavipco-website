@@ -56,6 +56,7 @@ import {
 import { ProductImageUploader } from "./ProductImageUploader";
 import { ProductSpecsRepeater } from "./ProductSpecsRepeater";
 import { ProductVariantBuilder } from "./ProductVariantBuilder";
+import { AIGenerateButton } from "@/components/admin/shared/AIGenerateButton";
 
 type Category = { id: string; name: string };
 
@@ -65,6 +66,7 @@ type Props = {
   productId?: string;
   categories: Category[];
   defaultValues: ProductInput;
+  aiEnabled?: boolean;
 };
 
 const STATUS_OPTIONS: Array<{ value: "DRAFT" | "ACTIVE" | "ARCHIVED"; label: string; hint: string }> = [
@@ -78,6 +80,7 @@ export function AdminProductForm({
   productId,
   categories,
   defaultValues,
+  aiEnabled = false,
 }: Props) {
   const router = useRouter();
   const { toast } = useToast();
@@ -92,6 +95,22 @@ export function AdminProductForm({
   const hasVariants = form.watch("hasVariants");
   const watchedName = form.watch("name");
   const watchedSlug = form.watch("slug");
+
+  // Context cho AI Copilot - đọc giá trị form hiện tại
+  function buildProductCtx() {
+    const v = form.getValues();
+    const categoryName = categories.find((c) => c.id === v.categoryId)?.name;
+    return {
+      name: v.name,
+      brand: v.brand,
+      categoryName,
+      specs: v.specs,
+      shortDescription: v.shortDescription,
+      basePrice: v.basePrice,
+      priceOnRequest: v.priceOnRequest,
+      existingDescription: v.description,
+    };
+  }
 
   // Auto-fill slug từ name (chỉ khi slug đang trống — không ghi đè manual edit)
   const [slugTouched, setSlugTouched] = React.useState(mode === "edit");
@@ -260,7 +279,18 @@ export function AdminProductForm({
                 name="shortDescription"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Mô tả ngắn</FormLabel>
+                    <div className="flex items-center justify-between gap-2">
+                      <FormLabel>Mô tả ngắn</FormLabel>
+                      <AIGenerateButton
+                        contentType="product-short"
+                        label="mô tả ngắn"
+                        aiEnabled={aiEnabled}
+                        getContext={buildProductCtx}
+                        onAccept={(t) =>
+                          form.setValue("shortDescription", t, { shouldDirty: true })
+                        }
+                      />
+                    </div>
                     <FormControl>
                       <Textarea
                         value={field.value ?? ""}
@@ -283,7 +313,18 @@ export function AdminProductForm({
                 name="description"
                 render={({ field }) => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>Mô tả chi tiết</FormLabel>
+                    <div className="flex items-center justify-between gap-2">
+                      <FormLabel>Mô tả chi tiết</FormLabel>
+                      <AIGenerateButton
+                        contentType="product-description"
+                        label="mô tả"
+                        aiEnabled={aiEnabled}
+                        getContext={buildProductCtx}
+                        onAccept={(t) =>
+                          form.setValue("description", t, { shouldDirty: true })
+                        }
+                      />
+                    </div>
                     <FormControl>
                       <Textarea
                         value={field.value ?? ""}
@@ -483,7 +524,18 @@ export function AdminProductForm({
                 name="metaDescription"
                 render={({ field }) => (
                   <FormItem>
-                    <FormLabel>Meta description</FormLabel>
+                    <div className="flex items-center justify-between gap-2">
+                      <FormLabel>Meta description</FormLabel>
+                      <AIGenerateButton
+                        contentType="product-seo"
+                        label="meta SEO"
+                        aiEnabled={aiEnabled}
+                        getContext={buildProductCtx}
+                        onAccept={(t) =>
+                          form.setValue("metaDescription", t, { shouldDirty: true })
+                        }
+                      />
+                    </div>
                     <FormControl>
                       <Textarea
                         value={field.value ?? ""}

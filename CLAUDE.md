@@ -59,6 +59,23 @@
 - **Analytics:** Google Analytics 4, Google Tag Manager
 - **Bản đồ:** Google Maps Embed cho trang liên hệ
 - **Hóa đơn điện tử:** Viettel Invoice hoặc Misa (giai đoạn 2)
+- **AI Admin Copilot:** Claude API (Anthropic) — sinh nội dung trong admin
+
+### AI Admin Copilot (Claude API)
+Tính năng nội bộ giúp admin sinh nội dung bằng Claude. Kiến trúc:
+- **`src/lib/ai/index.ts`** — `callClaude()` gọi REST Messages API qua `fetch`
+  (KHÔNG dùng SDK để tránh thêm dependency). `AI_ENABLED` check env.
+- **`src/lib/ai/prompts.ts`** — `buildPrompt(ctx)` theo từng `AIContentType`.
+  Mọi system prompt có ràng buộc CHỐNG HALLUCINATION: không bịa thông số kỹ thuật.
+- **`src/lib/actions/ai-content.ts`** — Server Action `generateContent()` require
+  ADMIN + rate limit. `isAIEnabled()` cho Server Component check để ẩn/hiện nút.
+- **`src/components/admin/shared/AIGenerateButton.tsx`** — nút ✨ + preview modal
+  (admin DUYỆT/sửa trước khi áp dụng — không bao giờ tự ghi đè field).
+- **Defensive:** thiếu `ANTHROPIC_API_KEY` → nút tự ẩn (`aiEnabled` prop từ page).
+- **Model:** mặc định Haiku 4.5 (env `ANTHROPIC_MODEL`), đổi Sonnet nếu cần.
+- Tích hợp ở các form: Product (mô tả/mô tả ngắn/meta SEO), Blog (nội dung/
+  tóm tắt), Service (mô tả/mô tả ngắn), Project (tóm tắt/mô tả).
+- **Quy tắc:** AI chỉ HỖ TRỢ — admin chịu trách nhiệm kiểm duyệt nội dung cuối.
 
 ### Triển khai
 - **Hosting:** Vercel (giai đoạn đầu) hoặc VPS Ubuntu + PM2 + Nginx (khi cần kiểm soát chi phí)

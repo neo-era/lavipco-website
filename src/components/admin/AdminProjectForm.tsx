@@ -44,14 +44,21 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { ImageUploader } from "@/components/admin/shared/ImageUploader";
+import { AIGenerateButton } from "@/components/admin/shared/AIGenerateButton";
 
 type Props = {
   mode: "create" | "edit";
   projectId?: string;
   defaultValues: ProjectInput;
+  aiEnabled?: boolean;
 };
 
-export function AdminProjectForm({ mode, projectId, defaultValues }: Props) {
+export function AdminProjectForm({
+  mode,
+  projectId,
+  defaultValues,
+  aiEnabled = false,
+}: Props) {
   const router = useRouter();
   const { toast } = useToast();
 
@@ -70,6 +77,20 @@ export function AdminProjectForm({ mode, projectId, defaultValues }: Props) {
       form.setValue("slug", slugify(watchedTitle));
     }
   }, [watchedTitle, slugTouched, form]);
+
+  // Context cho AI Copilot - đọc giá trị form hiện tại
+  function buildAICtx() {
+    const v = form.getValues();
+    return {
+      title: v.title,
+      client: v.client,
+      location: v.location,
+      year: v.year,
+      categoryLabel: PROJECT_CATEGORY_LABELS[v.category],
+      scale: v.scale,
+      existingSummary: v.summary,
+    };
+  }
 
   async function onSubmit(values: ProjectInput) {
     const res =
@@ -158,7 +179,18 @@ export function AdminProjectForm({ mode, projectId, defaultValues }: Props) {
               name="summary"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tóm tắt</FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>Tóm tắt</FormLabel>
+                    <AIGenerateButton
+                      contentType="project-summary"
+                      label="tóm tắt"
+                      aiEnabled={aiEnabled}
+                      getContext={buildAICtx}
+                      onAccept={(t) =>
+                        form.setValue("summary", t, { shouldDirty: true })
+                      }
+                    />
+                  </div>
                   <FormControl>
                     <Textarea
                       value={field.value ?? ""}
@@ -180,7 +212,18 @@ export function AdminProjectForm({ mode, projectId, defaultValues }: Props) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mô tả chi tiết</FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>Mô tả chi tiết</FormLabel>
+                    <AIGenerateButton
+                      contentType="project-description"
+                      label="mô tả"
+                      aiEnabled={aiEnabled}
+                      getContext={buildAICtx}
+                      onAccept={(t) =>
+                        form.setValue("description", t, { shouldDirty: true })
+                      }
+                    />
+                  </div>
                   <FormControl>
                     <Textarea
                       value={field.value ?? ""}

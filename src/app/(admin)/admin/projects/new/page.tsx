@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
 import type { ProjectInput } from "@/lib/validations/admin-project";
+import { isAIEnabled } from "@/lib/actions/ai-content";
 import { Button } from "@/components/ui/button";
 import { AdminProjectForm } from "@/components/admin/AdminProjectForm";
 
@@ -24,7 +25,8 @@ const DEFAULT_VALUES: ProjectInput = {
   sortOrder: 0,
 };
 
-export default function NewProjectPage() {
+export default async function NewProjectPage() {
+  const aiEnabled = await isAIEnabled();
   return (
     <div className="space-y-5">
       <div>
@@ -35,7 +37,11 @@ export default function NewProjectPage() {
         </Button>
         <h1 className="text-2xl font-bold md:text-3xl">Thêm dự án mới</h1>
       </div>
-      <AdminProjectForm mode="create" defaultValues={DEFAULT_VALUES} />
+      <AdminProjectForm
+        mode="create"
+        defaultValues={DEFAULT_VALUES}
+        aiEnabled={aiEnabled}
+      />
     </div>
   );
 }

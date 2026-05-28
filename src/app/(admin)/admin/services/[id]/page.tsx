@@ -5,6 +5,7 @@ import { ChevronLeft, ExternalLink } from "lucide-react";
 
 import { db } from "@/lib/db";
 import type { ServiceInput } from "@/lib/validations/admin-service";
+import { isAIEnabled } from "@/lib/actions/ai-content";
 import { Button } from "@/components/ui/button";
 import { AdminServiceForm } from "@/components/admin/AdminServiceForm";
 
@@ -16,7 +17,10 @@ export default async function EditServicePage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const service = await db.service.findUnique({ where: { id } });
+  const [service, aiEnabled] = await Promise.all([
+    db.service.findUnique({ where: { id } }),
+    isAIEnabled(),
+  ]);
   if (!service) notFound();
 
   const stepsJson = service.processSteps as unknown;
@@ -67,6 +71,7 @@ export default async function EditServicePage({
         mode="edit"
         serviceId={service.id}
         defaultValues={defaultValues}
+        aiEnabled={aiEnabled}
       />
     </div>
   );

@@ -32,11 +32,13 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { ImageUploader } from "@/components/admin/shared/ImageUploader";
+import { AIGenerateButton } from "@/components/admin/shared/AIGenerateButton";
 
 type Props = {
   mode: "create" | "edit";
   serviceId?: string;
   defaultValues: ServiceInput;
+  aiEnabled?: boolean;
 };
 
 const LUCIDE_ICON_PRESETS = [
@@ -52,7 +54,12 @@ const LUCIDE_ICON_PRESETS = [
   "Settings",
 ];
 
-export function AdminServiceForm({ mode, serviceId, defaultValues }: Props) {
+export function AdminServiceForm({
+  mode,
+  serviceId,
+  defaultValues,
+  aiEnabled = false,
+}: Props) {
   const router = useRouter();
   const { toast } = useToast();
 
@@ -76,6 +83,15 @@ export function AdminServiceForm({ mode, serviceId, defaultValues }: Props) {
       form.setValue("slug", slugify(watchedTitle));
     }
   }, [watchedTitle, slugTouched, form]);
+
+  function buildAICtx() {
+    const v = form.getValues();
+    return {
+      title: v.title,
+      shortDescription: v.shortDescription,
+      existingDescription: v.description,
+    };
+  }
 
   async function onSubmit(values: ServiceInput) {
     const res =
@@ -163,7 +179,18 @@ export function AdminServiceForm({ mode, serviceId, defaultValues }: Props) {
               name="shortDescription"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Mô tả ngắn</FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>Mô tả ngắn</FormLabel>
+                    <AIGenerateButton
+                      contentType="service-short"
+                      label="mô tả ngắn"
+                      aiEnabled={aiEnabled}
+                      getContext={buildAICtx}
+                      onAccept={(t) =>
+                        form.setValue("shortDescription", t, { shouldDirty: true })
+                      }
+                    />
+                  </div>
                   <FormControl>
                     <Textarea
                       value={field.value ?? ""}
@@ -185,9 +212,20 @@ export function AdminServiceForm({ mode, serviceId, defaultValues }: Props) {
               name="description"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    Mô tả chi tiết <span className="text-destructive">*</span>
-                  </FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>
+                      Mô tả chi tiết <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <AIGenerateButton
+                      contentType="service-description"
+                      label="mô tả"
+                      aiEnabled={aiEnabled}
+                      getContext={buildAICtx}
+                      onAccept={(t) =>
+                        form.setValue("description", t, { shouldDirty: true })
+                      }
+                    />
+                  </div>
                   <FormControl>
                     <Textarea
                       {...field}

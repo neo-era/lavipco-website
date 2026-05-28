@@ -34,14 +34,21 @@ import {
 } from "@/components/ui/form";
 import { ImageUploader } from "@/components/admin/shared/ImageUploader";
 import { RichTextEditor } from "@/components/admin/shared/RichTextEditor";
+import { AIGenerateButton } from "@/components/admin/shared/AIGenerateButton";
 
 type Props = {
   mode: "create" | "edit";
   postId?: string;
   defaultValues: BlogPostInput;
+  aiEnabled?: boolean;
 };
 
-export function AdminBlogForm({ mode, postId, defaultValues }: Props) {
+export function AdminBlogForm({
+  mode,
+  postId,
+  defaultValues,
+  aiEnabled = false,
+}: Props) {
   const router = useRouter();
   const { toast } = useToast();
 
@@ -63,6 +70,16 @@ export function AdminBlogForm({ mode, postId, defaultValues }: Props) {
       form.setValue("slug", slugify(watchedTitle));
     }
   }, [watchedTitle, slugTouched, form]);
+
+  function buildBlogCtx() {
+    const v = form.getValues();
+    return {
+      title: v.title,
+      excerpt: v.excerpt,
+      tags: v.tags,
+      existingContent: v.content,
+    };
+  }
 
   function addTag() {
     const v = newTag.trim();
@@ -180,7 +197,18 @@ export function AdminBlogForm({ mode, postId, defaultValues }: Props) {
               name="excerpt"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Tóm tắt</FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>Tóm tắt</FormLabel>
+                    <AIGenerateButton
+                      contentType="blog-excerpt"
+                      label="tóm tắt"
+                      aiEnabled={aiEnabled}
+                      getContext={buildBlogCtx}
+                      onAccept={(t) =>
+                        form.setValue("excerpt", t, { shouldDirty: true })
+                      }
+                    />
+                  </div>
                   <FormControl>
                     <Textarea
                       value={field.value ?? ""}
@@ -202,9 +230,20 @@ export function AdminBlogForm({ mode, postId, defaultValues }: Props) {
               name="content"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>
-                    Nội dung <span className="text-destructive">*</span>
-                  </FormLabel>
+                  <div className="flex items-center justify-between gap-2">
+                    <FormLabel>
+                      Nội dung <span className="text-destructive">*</span>
+                    </FormLabel>
+                    <AIGenerateButton
+                      contentType="blog-content"
+                      label="nội dung bài"
+                      aiEnabled={aiEnabled}
+                      getContext={buildBlogCtx}
+                      onAccept={(t) =>
+                        form.setValue("content", t, { shouldDirty: true })
+                      }
+                    />
+                  </div>
                   <FormControl>
                     <RichTextEditor
                       value={field.value}

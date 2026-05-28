@@ -3,6 +3,7 @@ import Link from "next/link";
 import { ChevronLeft } from "lucide-react";
 
 import type { ServiceInput } from "@/lib/validations/admin-service";
+import { isAIEnabled } from "@/lib/actions/ai-content";
 import { Button } from "@/components/ui/button";
 import { AdminServiceForm } from "@/components/admin/AdminServiceForm";
 
@@ -21,7 +22,8 @@ const DEFAULT_VALUES: ServiceInput = {
   isActive: true,
 };
 
-export default function NewServicePage() {
+export default async function NewServicePage() {
+  const aiEnabled = await isAIEnabled();
   return (
     <div className="space-y-5">
       <div>
@@ -32,7 +34,11 @@ export default function NewServicePage() {
         </Button>
         <h1 className="text-2xl font-bold md:text-3xl">Thêm dịch vụ mới</h1>
       </div>
-      <AdminServiceForm mode="create" defaultValues={DEFAULT_VALUES} />
+      <AdminServiceForm
+        mode="create"
+        defaultValues={DEFAULT_VALUES}
+        aiEnabled={aiEnabled}
+      />
     </div>
   );
 }
