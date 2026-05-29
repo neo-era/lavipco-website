@@ -111,3 +111,18 @@ export async function uploadImage(dataUrl: string): Promise<string> {
   // Fallback: trả nguyên data URL (lưu base64 vào DB - không scale, dev OK)
   return dataUrl;
 }
+
+/**
+ * Upload file catalogue (PDF) lên Cloudinary, folder lavipco/catalogues.
+ * Dùng chung endpoint /auto/upload nên nhận mọi loại file (kể cả PDF).
+ *
+ * Trả URL Cloudinary, hoặc null nếu env thiếu / upload fail — caller tự quyết
+ * fallback (admin-products.ts giữ nguyên data URL khi null).
+ *
+ * ⚠️ Cloudinary MẶC ĐỊNH chặn phân phối PDF (trả 401). Phải bật
+ * Settings → Security → "Allow delivery of PDF and ZIP files" trên dashboard.
+ */
+export async function uploadCatalogue(dataUrl: string): Promise<string | null> {
+  const result = await uploadToCloudinary(dataUrl, "lavipco/catalogues");
+  return result?.url ?? null;
+}

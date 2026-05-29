@@ -54,6 +54,7 @@ import {
   FormDescription,
 } from "@/components/ui/form";
 import { ProductImageUploader } from "./ProductImageUploader";
+import { ProductCatalogueUploader } from "./ProductCatalogueUploader";
 import { ProductSpecsRepeater } from "./ProductSpecsRepeater";
 import { ProductVariantBuilder } from "./ProductVariantBuilder";
 import { AIGenerateButton } from "@/components/admin/shared/AIGenerateButton";
@@ -611,18 +612,12 @@ export function AdminProductForm({
               <FormField
                 control={form.control}
                 name="catalogueUrl"
-                render={({ field }) => (
+                render={() => (
                   <FormItem className="md:col-span-2">
-                    <FormLabel>URL Catalogue PDF</FormLabel>
-                    <FormControl>
-                      <Input
-                        type="url"
-                        value={field.value ?? ""}
-                        onChange={field.onChange}
-                        placeholder="https://res.cloudinary.com/.../catalogue.pdf"
-                      />
-                    </FormControl>
+                    <FormLabel>Catalogue PDF</FormLabel>
+                    <ProductCatalogueUploader />
                     <FormDescription className="text-xs">
+                      Chọn file PDF để tải lên (lưu trên Cloudinary khi bấm Lưu).
                       Hiển thị nút &quot;Tải catalogue&quot; ở trang chi tiết. Để trống nếu chưa có.
                     </FormDescription>
                     <FormMessage />

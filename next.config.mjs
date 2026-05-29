@@ -63,6 +63,12 @@ const nextConfig = {
     // exceljs nặng + dynamic-require: để Next require lúc runtime thay vì bundle
     // vào serverless function (giảm kích thước function, tránh lỗi bundle).
     serverComponentsExternalPackages: ["exceljs"],
+    // Upload ảnh/catalogue PDF gửi qua Server Action dạng base64 data URL.
+    // Mặc định Next giới hạn body 1MB → file lớn fail im lặng. Nâng lên 15MB
+    // (base64 phình ~33% nên file thực ~11MB là ngưỡng an toàn).
+    serverActions: {
+      bodySizeLimit: "15mb",
+    },
   },
   images: {
     remotePatterns: [

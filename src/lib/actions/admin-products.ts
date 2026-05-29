@@ -19,7 +19,7 @@ import { Prisma } from "@prisma/client";
 
 import { auth } from "@/lib/auth";
 import { db } from "@/lib/db";
-import { uploadImage } from "@/lib/cloudinary";
+import { uploadImage, uploadCatalogue } from "@/lib/cloudinary";
 import { removeVietnameseAccents } from "@/lib/utils";
 import {
   productInputSchema,
@@ -57,6 +57,29 @@ async function processImages(images: string[]): Promise<string[]> {
     }
   }
   return processed;
+}
+
+/**
+ * Process catalogue PDF từ form input:
+ *  - rỗng / null → null (sản phẩm không có catalogue).
+ *  - URL http/https đã tồn tại → giữ nguyên (không re-upload).
+ *  - data:...base64 (file admin vừa chọn) → upload Cloudinary folder catalogues,
+ *    fallback giữ nguyên data URL nếu env Cloudinary thiếu / upload fail.
+ */
+async function processCatalogue(
+  catalogueUrl: string | null | undefined,
+): Promise<string | null> {
+  if (!catalogueUrl) return null;
+  if (catalogueUrl.startsWith("http://") || catalogueUrl.startsWith("https://")) {
+    return catalogueUrl;
+  }
+  if (catalogueUrl.startsWith("data:")) {
+    const url = await uploadCatalogue(catalogueUrl);
+    return url ?? catalogueUrl;
+  }
+  // Input không hợp lệ → bỏ
+  console.warn("[admin-products] Bỏ qua catalogue không hợp lệ:", catalogueUrl.slice(0, 50));
+  return null;
 }
 
 /**
@@ -169,6 +192,8 @@ export async function createProduct(
 
     // Process ảnh (upload Cloudinary nếu cần)
     const images = await processImages(data.images);
+    // Process catalogue PDF (upload Cloudinary nếu là file mới)
+    const catalogueUrl = await processCatalogue(data.catalogueUrl);
 
     // Chuẩn hoá variants
     const basePrice = data.priceOnRequest ? 0 : (data.basePrice ?? 0);
@@ -208,7 +233,7 @@ export async function createProduct(
         basePrice: new Prisma.Decimal(basePrice),
         priceOnRequest: data.priceOnRequest,
         images,
-        catalogueUrl: data.catalogueUrl ?? null,
+        catalogueUrl,
         specs: data.specs.length > 0 ? (data.specs as Prisma.JsonArray) : Prisma.JsonNull,
         status: data.status,
         isFeatured: data.isFeatured,
@@ -304,6 +329,8 @@ export async function updateProduct(
 
     // Process ảnh
     const images = await processImages(data.images);
+    // Process catalogue PDF (upload Cloudinary nếu là file mới)
+    const catalogueUrl = await processCatalogue(data.catalogueUrl);
 
     const basePrice = data.priceOnRequest ? 0 : (data.basePrice ?? 0);
     const variants = normalizeVariants({
@@ -374,7 +401,7 @@ export async function updateProduct(
           basePrice: new Prisma.Decimal(basePrice),
           priceOnRequest: data.priceOnRequest,
           images,
-          catalogueUrl: data.catalogueUrl ?? null,
+          catalogueUrl,
           specs:
             data.specs.length > 0
               ? (data.specs as Prisma.JsonArray)
