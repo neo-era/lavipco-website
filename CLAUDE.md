@@ -296,6 +296,8 @@ NEXT_PUBLIC_SITE_URL="http://localhost:3000"
 NEXT_PUBLIC_GA_ID=""
 ```
 
+> **Lưu ý Prisma + Supabase pooler (production):** `DATABASE_URL` qua connection pooler (port `6543`) PHẢI có `?pgbouncer=true` (tắt prepared statements) + `connection_limit` đủ cao (vd `10`) + `pool_timeout` (vd `20`). Thiếu `connection_limit` cao → `next build` prerender nhiều trang bị lỗi *"Timed out fetching a connection from the pool"*; thiếu `pgbouncer=true` → lỗi *"prepared statement already exists"* lúc runtime. Migration dùng `DIRECT_URL` (port `5432`).
+
 ---
 
 ## 8. Mô hình dữ liệu (tóm lược)
@@ -323,7 +325,7 @@ Schema chi tiết ở `prisma/schema.prisma`. Các model chính:
 
 - **Không hard-code secret** trong code dưới bất kỳ hình thức nào.
 - **Validate mọi input** từ user bằng Zod trước khi xử lý hoặc lưu DB.
-- **Sanitize HTML** khi render nội dung blog/sản phẩm (dùng `isomorphic-dompurify` hoặc render qua MDX an toàn).
+- **Sanitize HTML** khi lưu/render nội dung blog/sản phẩm — dùng `sanitizeHtml()` ở `src/lib/sanitize.ts` (backend bằng `sanitize-html`, thuần Node, KHÔNG dùng jsdom/isomorphic-dompurify vì gây `ERR_REQUIRE_ESM` trên runtime serverless Vercel).
 - **Phân quyền:** Mọi action trong `/admin/*` phải check `session.user.role === 'ADMIN'` ở cả middleware lẫn server action.
 - **CSRF:** Server Actions của Next.js đã có protection sẵn, không tắt.
 - **Rate limit:** Bắt buộc cho các endpoint nhạy cảm: login, register, contact form, password reset.
@@ -359,6 +361,10 @@ Schema chi tiết ở `prisma/schema.prisma`. Các model chính:
 - Hotline, email, địa chỉ công ty hiển thị ở footer và trang Liên hệ.
 - Hiển thị MST (Mã số thuế) ở footer theo yêu cầu pháp lý.
 - Logo đăng ký Bộ Công Thương đặt ở footer khi đã có.
+
+### Địa chỉ giao hàng & Vận chuyển
+- **Địa chỉ 2 cấp** (theo sáp nhập 2025): Tỉnh/Thành → Phường/Xã, KHÔNG còn Quận/Huyện. Dữ liệu ở `src/lib/regions/`. Trường `Address.district` vẫn còn nhưng đã chuyển nullable (legacy, không ghi mới).
+- **Phí vận chuyển:** hiện dùng **phí đồng giá toàn quốc** (`calculateShippingFee` trả flat fee — `src/lib/shipping/`). GHN tính phí realtime tạm tắt vì GHN còn dùng địa chỉ 3 cấp (cần `district_id`); sẽ bật lại khi GHN hỗ trợ cấu trúc 2 cấp.
 
 ---
 

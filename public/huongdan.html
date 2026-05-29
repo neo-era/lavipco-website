@@ -883,8 +883,8 @@
     <tr><td><strong>General</strong></td><td>Tên site, tagline, logo URL, favicon URL</td></tr>
     <tr><td><strong>Contact</strong></td><td>Hotline, email, address, MST, giờ làm việc — hiển thị ở footer + trang liên hệ</td></tr>
     <tr><td><strong>Social</strong></td><td>Facebook, Zalo, YouTube URLs</td></tr>
-    <tr><td><strong>Payment</strong></td><td>Bật/tắt VNPay/COD, thông tin chuyển khoản ngân hàng</td></tr>
-    <tr><td><strong>Shipping</strong></td><td>Bật GHN API, phí ship mặc định, ngưỡng FREE SHIP</td></tr>
+    <tr><td><strong>Payment</strong></td><td>Bật/tắt VNPay/COD, thông tin chuyển khoản ngân hàng (hỗ trợ 2 tài khoản)</td></tr>
+    <tr><td><strong>Shipping</strong></td><td>Phí ship đồng giá toàn quốc + ngưỡng FREE SHIP (GHN realtime tạm tắt do địa chỉ 2 cấp mới sau sáp nhập)</td></tr>
     <tr><td><strong>Email</strong></td><td>From name, From address, Reply-to</td></tr>
     <tr><td><strong>SEO</strong></td><td>Meta title/description default, Google Analytics ID, GTM ID</td></tr>
   </tbody>
@@ -1071,7 +1071,7 @@
 <p>Có. Khi sản phẩm có biến thể (hasVariants=true), tổng tồn = sum stock của mọi variant. Khi không có biến thể, dùng "Tồn kho" ở Card 2.</p>
 
 <h3>❓ Có thể bulk import sản phẩm từ Excel?</h3>
-<p>Chưa support trực tiếp. Liên hệ kỹ thuật chạy script seed batch nếu cần import nhiều.</p>
+<p>Có. Xem mục <a class="link" href="#import">15. Nhập dữ liệu từ Excel</a> — hỗ trợ nhập/cập nhật hàng loạt Sản phẩm, Dự án, Dịch vụ, Tin tức bằng file .xlsx (có file mẫu kèm hướng dẫn).</p>
 
 <h3>❓ Báo giá (BG) — code <code>0425/2026/LVC-BG</code> tạo thế nào?</h3>
 <p>Sẽ phát triển trong giai đoạn sau (Phase 7). Hiện chỉ có yêu cầu báo giá lưu vào <code>ContactMessage</code>, admin xử lý thủ công.</p>
