@@ -147,10 +147,10 @@ export const FOOTER_NAV = {
     { title: "Liên hệ", href: "/contact" },
   ],
   support: [
-    { title: "Hướng dẫn mua hàng", href: "/guide" },
+    { title: "Hướng dẫn mua hàng", href: "/huong-dan-mua-hang" },
     { title: "Câu hỏi thường gặp", href: "/faq" },
-    { title: "Chính sách bảo hành", href: "/warranty" },
-    { title: "Chính sách đổi trả", href: "/return-policy" },
+    { title: "Chính sách bảo hành", href: "/bao-hanh" },
+    { title: "Chính sách đổi trả", href: "/doi-tra" },
     { title: "Chính sách bảo mật", href: "/privacy" },
     { title: "Điều khoản sử dụng", href: "/terms" },
   ],

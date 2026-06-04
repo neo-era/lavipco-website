@@ -158,6 +158,42 @@ export const aboutCtaSchema = z.object({
   button2Href: href,
 });
 
+// ---- Policies: Shopping guide (numbered steps) ----
+export const policyStepSchema = z.object({
+  title: z.string().max(200),
+  body: longText,
+});
+export const policyShoppingGuideSchema = z.object({
+  title: z.string().max(300),
+  intro: longText,
+  steps: z.array(policyStepSchema).max(20),
+  note: longText.optional(),
+});
+
+// ---- Policies: FAQ (nhóm câu hỏi) ----
+export const faqItemSchema = z.object({
+  q: z.string().max(500),
+  a: longText,
+});
+export const faqGroupSchema = z.object({
+  name: z.string().max(200),
+  items: z.array(faqItemSchema).max(50),
+});
+export const policyFaqSchema = z.object({
+  title: z.string().max(300),
+  intro: longText.optional(),
+  groups: z.array(faqGroupSchema).max(20),
+});
+
+// ---- Policies: HTML body (warranty / return / privacy / terms) ----
+// body cho phép tới 50k ký tự để chứa văn bản pháp lý dài.
+const policyHtmlBody = z.string().max(50_000);
+export const policyHtmlSchema = z.object({
+  title: z.string().max(300),
+  body: policyHtmlBody,
+  updatedAt: z.string().max(40), // ISO date string, dùng cho hiển thị "Cập nhật ngày..."
+});
+
 /** Map key → schema. Nguồn chân lý duy nhất cho các key nội dung. */
 export const contentSchemas = {
   home_hero: homeHeroSchema,
@@ -173,6 +209,12 @@ export const contentSchemas = {
   about_certs: aboutCertsSchema,
   about_partners: aboutPartnersSchema,
   about_cta: aboutCtaSchema,
+  policy_shopping_guide: policyShoppingGuideSchema,
+  policy_faq: policyFaqSchema,
+  policy_warranty: policyHtmlSchema,
+  policy_return: policyHtmlSchema,
+  policy_privacy: policyHtmlSchema,
+  policy_terms: policyHtmlSchema,
 } as const;
 
 export type ContentKey = keyof typeof contentSchemas;
@@ -195,4 +237,13 @@ export const ABOUT_CONTENT_KEYS = [
   "about_certs",
   "about_partners",
   "about_cta",
+] as const satisfies readonly ContentKey[];
+
+export const POLICY_CONTENT_KEYS = [
+  "policy_shopping_guide",
+  "policy_faq",
+  "policy_warranty",
+  "policy_return",
+  "policy_privacy",
+  "policy_terms",
 ] as const satisfies readonly ContentKey[];

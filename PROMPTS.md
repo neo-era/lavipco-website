@@ -1495,6 +1495,85 @@ Validate bằng `productInputSchema` với `hasVariants=false, variants=[]`. Act
 
 ---
 
+# GIAI ĐOẠN 10 — TRANG HỖ TRỢ & CHÍNH SÁCH
+
+> Mục tiêu: hoàn thiện block **"Hỗ trợ"** ở footer (6 link: Hướng dẫn mua hàng, Câu hỏi thường gặp, Chính sách bảo hành, Chính sách đổi trả, Chính sách bảo mật, Điều khoản sử dụng). Mỗi trang có **layout chung**, nội dung **sửa được trong `/admin/content`** (CMS), defensive fallback nếu chưa có dữ liệu.
+
+## Prompt 10.1 — Khung CMS + 6 trang công khai
+
+Tái dùng pattern CMS đã có ở `src/lib/content/` (Setting key + JSON + Zod schema + `CONTENT_DEFAULTS` + `getContent` defensive fallback — xem các key `home_*` / `about_*`).
+
+**Thêm 6 key CMS** vào `src/lib/content/schema.ts` + `defaults.ts`:
+
+- `policy_shopping_guide` — schema: `{ title, intro, steps: [{ title, body }], note? }`
+- `policy_faq` — schema: `{ title, intro?, groups: [{ name, items: [{ q, a }] }] }` (FAQ phân nhóm)
+- `policy_warranty` — schema: `{ title, body (HTML từ Tiptap), updatedAt }`
+- `policy_return` — như `policy_warranty`
+- `policy_privacy` — như `policy_warranty` (nội dung mặc định viết theo **Nghị định 13/2023/NĐ-CP** về bảo vệ dữ liệu cá nhân)
+- `policy_terms` — như `policy_warranty`
+
+**Tạo 6 trang Server Component** trong `src/app/(public)/`:
+
+| Slug | File | Ghi chú |
+| --- | --- | --- |
+| `/huong-dan-mua-hang` | `huong-dan-mua-hang/page.tsx` | |
+| `/faq` | `faq/page.tsx` | |
+| `/bao-hanh` | `bao-hanh/page.tsx` | |
+| `/doi-tra` | `doi-tra/page.tsx` | |
+| `/privacy` | `privacy/page.tsx` | **KHÔNG đổi slug** — đã được `CheckoutForm` tham chiếu |
+| `/terms` | `terms/page.tsx` | **KHÔNG đổi slug** — đã được `CheckoutForm` tham chiếu |
+
+Mỗi trang:
+- `export const revalidate = 300;` (ISR 5 phút).
+- Đọc nội dung qua `getContent("policy_*")`.
+- Render trong **`PolicyLayout`** chung: `Container` + breadcrumb (Trang chủ → Tên trang) + tiêu đề + vùng nội dung `prose` + ngày cập nhật.
+- `metadata`: `title = "<Tên trang> | LAVIPCO"`, `description` lấy từ schema.
+- Nội dung HTML (warranty/return/privacy/terms) **bắt buộc đi qua `sanitizeHtml()`** trước khi `dangerouslySetInnerHTML`.
+- `/faq` render bằng shadcn `Accordion`, mỗi `group.name` thành heading nhỏ.
+- `/huong-dan-mua-hang` render dạng numbered steps.
+
+**Ràng buộc:** KHÔNG thêm dependency mới (tái dùng `sanitize-html`, shadcn `Accordion`). Type-check + lint sạch.
+
+---
+
+## Prompt 10.2 — Tab "Trang chính sách" trong /admin/content
+
+Mở rộng `/admin/content` (xem `src/components/admin/content/` + `src/lib/actions/admin-content.ts`). Thêm **tab thứ 3** tên "Trang chính sách" cạnh "Trang chủ" và "Trang giới thiệu". Trong tab có 6 mục, mỗi mục là một card với form riêng + nút **Lưu**:
+
+1. **Hướng dẫn mua hàng** — input `title` / `intro` / `note` + `useFieldArray` cho `steps`.
+2. **Câu hỏi thường gặp** — input `title` / `intro` + `useFieldArray` 2 cấp: `groups[].items[]` (q + a là `Textarea`); thêm/xoá/sắp xếp ở cả 2 cấp.
+3. **Bảo hành / Đổi trả / Bảo mật / Điều khoản** (4 form gần giống nhau) — input `title` + **`RichTextEditor`** (Tiptap dùng chung với blog) cho `body` + auto stamp `updatedAt = new Date().toISOString()` khi Lưu.
+
+Server Action xử lý nằm trong `admin-content.ts`:
+- Tái dùng action chung `updateContent(key, value)` đã có — KHÔNG tạo action riêng cho từng key.
+- Require ADMIN; validate bằng đúng schema CMS tương ứng (`contentSchemas[key]`).
+- `sanitizeHtml()` field `body` trước khi lưu (cho 4 policy rich text).
+- `revalidatePath` cho slug public tương ứng.
+
+**Ràng buộc:** giữ chữ ký `updateContent` cũ tương thích; chỉ mở rộng schema + UI.
+
+---
+
+## Prompt 10.3 — Wire footer + SEO + tài liệu
+
+- **Footer:** chỉnh `src/components/layout/Footer.tsx`, block "Hỗ trợ" trỏ tới 6 slug ở Prompt 10.1. Tên hiển thị khớp ảnh chụp: *Hướng dẫn mua hàng / Câu hỏi thường gặp / Chính sách bảo hành / Chính sách đổi trả / Chính sách bảo mật / Điều khoản sử dụng*.
+- **Sitemap:** thêm 6 URL vào `src/app/sitemap.ts` (priority `0.5`, `changeFrequency: "monthly"`).
+- **JSON-LD FAQ:** trang `/faq` render thêm `<script type="application/ld+json">` schema.org `FAQPage` với toàn bộ Q&A (rich snippet trên Google).
+- **Breadcrumb JSON-LD** cho cả 6 trang.
+- **Cập nhật tài liệu nội bộ:**
+  - `public/huongdan.html`: thêm mục "17. Trang Hỗ trợ & Chính sách" hướng dẫn admin sửa nội dung ở tab mới.
+  - `public/gioithieu.html`: thêm 1 dòng vào bảng Tính năng quản trị: "Trang chính sách — sửa nội dung 6 trang hỗ trợ trong CMS".
+
+**Test thủ công sau khi xong:**
+- Bấm từng link ở footer Hỗ trợ → trang load, breadcrumb đúng, nội dung mặc định hiển thị.
+- Vào `/admin/content` tab "Trang chính sách" → sửa 1 trường → Lưu → mở trang public thấy đổi sau revalidate (hoặc hard reload).
+- Bỏ trống 1 trường → trang public dùng default (không vỡ).
+- View source `/faq` → có script `application/ld+json` schema `FAQPage`.
+
+**Ràng buộc chung Giai đoạn 10:** require ADMIN mọi action sửa; HTML body luôn `sanitizeHtml`; defensive fallback `CONTENT_DEFAULTS`; type-check + lint sạch; KHÔNG đổi slug `/privacy` và `/terms`.
+
+---
+
 # MẸO VIẾT PROMPT HIỆU QUẢ
 
 Khi tự viết prompt cho Claude Code (ngoài bộ mẫu này), Lam tham khảo các nguyên tắc sau:
